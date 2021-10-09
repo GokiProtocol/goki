@@ -20,6 +20,9 @@
     "prepare": "husky install",
     "typecheck": "tsc"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@project-serum/anchor": "^0.17.1-beta.1",
     "@rushstack/eslint-patch": "^1.0.7",
