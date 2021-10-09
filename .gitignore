@@ -1,0 +1,21 @@
+.anchor
+.DS_Store
+target
+**/*.rs.bk
+node_modules
+
+# Generated IDL types
+artifacts/
+dist/
+src/idls/
+
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+deployments/
+Captain.toml

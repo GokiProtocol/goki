@@ -1,0 +1,25 @@
+[package]
+name = "token-signer"
+version = "0.1.0"
+description = "Sign transactions by owning a token"
+homepage = "https://goki.so"
+repository = "https://github.com/GokiProtocol/goki"
+authors = ["Goki Rajesh <goki@goki.so>"]
+license = "AGPL-3.0"
+edition = "2018"
+keywords = ["solana", "goki"]
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "token_signer"
+
+[features]
+no-entrypoint = []
+no-idl = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.17.0"
+anchor-spl = "0.17.0"
+vipers = "1.2.1"
