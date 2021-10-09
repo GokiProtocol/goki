@@ -23,8 +23,13 @@ It currently features:
 | Package                | Description                                       | Version                                                                                                             | Docs                                                                                    |
 | :--------------------- | :------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------- |
 | `smart-wallet`         | Multisig Solana wallet with Timelock capabilities | [![Crates.io](https://img.shields.io/crates/v/smart-wallet)](https://crates.io/crates/smart-wallet)                 | [![Docs.rs](https://docs.rs/smart-wallet/badge.svg)](https://docs.rs/smart-wallet)      |
-| `token-signer`         | //! Sign transactions by owning a token           | [![crates](https://img.shields.io/crates/v/token-signer)](https://crates.io/crates/token-signer)                    | [![Docs.rs](https://docs.rs/token-signer/badge.svg)](https://docs.rs/token-signer)      |
+| `token-signer`         | Sign transactions by owning a token               | [![crates](https://img.shields.io/crates/v/token-signer)](https://crates.io/crates/token-signer)                    | [![Docs.rs](https://docs.rs/token-signer/badge.svg)](https://docs.rs/token-signer)      |
 | `@gokiprotocol/client` | TypeScript SDK for Goki                           | [![npm](https://img.shields.io/npm/v/@gokiprotocol/client.svg)](https://www.npmjs.com/package/@gokiprotocol/client) | [![Docs](https://img.shields.io/badge/docs-typedoc-blue)](https://docs.goki.so/client/) |
+
+## Addresses
+
+- **Smart Wallet:** [`GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH`](https://explorer.solana.com/address/GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH)
+- **Token Signer:** [`NFTUJzSHuUCsMMqMRJpB7PmbsaU7Wm51acdPk2FXMLn`](https://explorer.solana.com/address/NFTUJzSHuUCsMMqMRJpB7PmbsaU7Wm51acdPk2FXMLn)
 
 ## Philosophy
 
