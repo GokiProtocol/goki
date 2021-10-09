@@ -1,0 +1,96 @@
+<!DOCTYPE html><html class="default no-js"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>@gokiprotocol/client - v1.0.0</title><meta name="description" content="Documentation for @gokiprotocol/client - v1.0.0"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">@gokiprotocol/client - v1.0.0</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label><input type="checkbox" id="tsd-filter-externals" checked/><label class="tsd-widget" for="tsd-filter-externals">Externals</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><h1>@gokiprotocol/client - v1.0.0</h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><div class="tsd-panel tsd-typography">
+<a href="#🔑-goki" id="🔑-goki" style="color: inherit; text-decoration: none;">
+  <h1>🔑 goki</h1>
+</a>
+<p><a href="https://github.com/GokiProtocol/goki/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-AGPL%203.0-blue" alt="License"></a>
+<a href="https://github.com/GokiProtocol/goki/actions/workflows/programs-e2e.yml?query=branch%3Amaster"><img src="https://img.shields.io/github/workflow/status/GokiProtocol/goki/E2E/master" alt="Build Status"></a>
+<a href="https://github.com/GokiProtocol/goki/graphs/contributors"><img src="https://img.shields.io/github/contributors/GokiProtocol/goki" alt="Contributors"></a></p>
+<p><img src="/images/banner.jpeg" alt="Banner"></p>
+<p>Goki is a suite of programs for Solana key management and security.</p>
+<p>It currently features:</p>
+<ul>
+<li><strong>Goki Smart Wallet:</strong> A wallet loosely based on the <a href="https://anchor.projectserum.com/build/3">Serum</a> implementation</li>
+<li><strong>Token Signer:</strong> Allows signing transactions by holding an NFT or tokens</li>
+</ul>
+
+<a href="#note" id="note" style="color: inherit; text-decoration: none;">
+  <h2>Note</h2>
+</a>
+<ul>
+<li><strong>Goki is in active development, so all APIs are subject to change.</strong></li>
+<li><strong>This code is unaudited. Use at your own risk.</strong></li>
+</ul>
+
+<a href="#packages" id="packages" style="color: inherit; text-decoration: none;">
+  <h2>Packages</h2>
+</a>
+<table>
+<thead>
+<tr>
+<th align="left">Package</th>
+<th align="left">Description</th>
+<th align="left">Version</th>
+<th align="left">Docs</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>smart-wallet</code></td>
+<td align="left">Multisig Solana wallet with Timelock capabilities</td>
+<td align="left"><a href="https://crates.io/crates/smart-wallet"><img src="https://img.shields.io/crates/v/smart-wallet" alt="Crates.io"></a></td>
+<td align="left"><a href="https://docs.rs/smart-wallet"><img src="https://docs.rs/smart-wallet/badge.svg" alt="Docs.rs"></a></td>
+</tr>
+<tr>
+<td align="left"><code>token-signer</code></td>
+<td align="left">//! Sign transactions by owning a token</td>
+<td align="left"><a href="https://crates.io/crates/token-signer"><img src="https://img.shields.io/crates/v/token-signer" alt="crates"></a></td>
+<td align="left"><a href="https://docs.rs/token-signer"><img src="https://docs.rs/token-signer/badge.svg" alt="Docs.rs"></a></td>
+</tr>
+<tr>
+<td align="left"><code>@gokiprotocol/client</code></td>
+<td align="left">TypeScript SDK for Goki</td>
+<td align="left"><a href="https://www.npmjs.com/package/@gokiprotocol/client"><img src="https://img.shields.io/npm/v/@gokiprotocol/client.svg" alt="npm"></a></td>
+<td align="left"><a href="https://docs.goki.so/client/"><img src="https://img.shields.io/badge/docs-typedoc-blue" alt="Docs"></a></td>
+</tr>
+</tbody></table>
+
+<a href="#philosophy" id="philosophy" style="color: inherit; text-decoration: none;">
+  <h2>Philosophy</h2>
+</a>
+<p>Goki embraces the concept of gradually increasing decentralization: ownership should be able to shift from centralized to increasingly more decentralized accounts.</p>
+<p>Our intended use case is to:</p>
+<ol>
+<li>Use a local wallet for development, using the NFT key.</li>
+<li>Once the project becomes more serious, send the NFT to a Ledger or other hardware wallet.</li>
+<li>On mainnet/production, use the <code>multisig</code> wallet.</li>
+<li>Once sufficient traction has been established, send the NFTs to the DAO.</li>
+</ol>
+
+<a href="#granularity" id="granularity" style="color: inherit; text-decoration: none;">
+  <h3>Granularity</h3>
+</a>
+<p>Goki also allows for granular access control: NFTs are cheap to create, so it should be possible to create an NFT for every possible ownership or role within a protocol.</p>
+<p>NFTs also support metadata via protocols such as <a href="https://www.notion.so/Metaplex-Developer-Guide-afefbc19841744c28587ab948a08cfac">Metaplex</a>, so it should be much easier to manage the different roles and permissions with visual NFT names.</p>
+
+<a href="#real-world-example-uniswap" id="real-world-example-uniswap" style="color: inherit; text-decoration: none;">
+  <h4>Real world example: Uniswap</h4>
+</a>
+<p>Imagine you have an AMM that has the following roles:</p>
+<ul>
+<li>Upgrading the &quot;factory&quot; contract</li>
+<li>Upgrading the &quot;router&quot; contract</li>
+<li>Setting protocol fees</li>
+</ul>
+<p>These three roles are all very different in risk and importance.</p>
+<ul>
+<li>A factory contract is extremely sensitive, as it would affect all swaps on the platform. This should only be upgraded by the team, but in the future the keys to the contract should be &quot;burned&quot;.</li>
+<li>The router is non custodial, so it should be owned by the team&#39;s multisig-- ideally one with a low threshold of execution.</li>
+<li>Protocol fees should be set by the DAO.</li>
+</ul>
+<p>Using an NFT here makes it easier for users and the community to track and understand the transition of power as a DAO evolves.</p>
+
+<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+  <h2>License</h2>
+</a>
+<p>Goki Protocol is licensed under the GNU Affero General Public License v3.0.</p>
+<p>In short, this means that any changes to this code must be made open source and available under the AGPL-v3.0 license, even if only used privately. If you have a need to use this program and cannot respect the terms of the license, please message us our legal team directly at <a href="mailto:legal@goki.so">legal@goki.so</a>.</p>
+</div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Exports</a></li><li class=" tsd-kind-namespace"><a href="modules/MultisigWrapper.html">Multisig<wbr/>Wrapper</a></li></ul></nav><nav class="tsd-navigation secondary menu-sticky"><ul><li class="tsd-kind-class"><a href="classes/GokiSDK.html" class="tsd-kind-icon">GokiSDK</a></li><li class="tsd-kind-interface"><a href="interfaces/Programs.html" class="tsd-kind-icon">Programs</a></li><li class="tsd-kind-type-alias"><a href="modules.html#SmartWalletData" class="tsd-kind-icon">Smart<wbr/>Wallet<wbr/>Data</a></li><li class="tsd-kind-type-alias"><a href="modules.html#SmartWalletError" class="tsd-kind-icon">Smart<wbr/>Wallet<wbr/>Error</a></li><li class="tsd-kind-type-alias"><a href="modules.html#SmartWalletEvents" class="tsd-kind-icon">Smart<wbr/>Wallet<wbr/>Events</a></li><li class="tsd-kind-type-alias"><a href="modules.html#SmartWalletIDL" class="tsd-kind-icon">Smart<wbr/>WalletIDL</a></li><li class="tsd-kind-type-alias"><a href="modules.html#SmartWalletInstruction" class="tsd-kind-icon">Smart<wbr/>Wallet<wbr/>Instruction</a></li><li class="tsd-kind-type-alias"><a href="modules.html#SmartWalletProgram" class="tsd-kind-icon">Smart<wbr/>Wallet<wbr/>Program</a></li><li class="tsd-kind-type-alias"><a href="modules.html#SmartWalletTransactionData" class="tsd-kind-icon">Smart<wbr/>Wallet<wbr/>Transaction<wbr/>Data</a></li><li class="tsd-kind-type-alias"><a href="modules.html#SmartWalletTypes" class="tsd-kind-icon">Smart<wbr/>Wallet<wbr/>Types</a></li><li class="tsd-kind-type-alias"><a href="modules.html#TransactionApproveEvent" class="tsd-kind-icon">Transaction<wbr/>Approve<wbr/>Event</a></li><li class="tsd-kind-type-alias"><a href="modules.html#TransactionCreateEvent" class="tsd-kind-icon">Transaction<wbr/>Create<wbr/>Event</a></li><li class="tsd-kind-type-alias"><a href="modules.html#TransactionExecuteEvent" class="tsd-kind-icon">Transaction<wbr/>Execute<wbr/>Event</a></li><li class="tsd-kind-type-alias"><a href="modules.html#WalletChangeThresholdEvent" class="tsd-kind-icon">Wallet<wbr/>Change<wbr/>Threshold<wbr/>Event</a></li><li class="tsd-kind-type-alias"><a href="modules.html#WalletCreateEvent" class="tsd-kind-icon">Wallet<wbr/>Create<wbr/>Event</a></li><li class="tsd-kind-type-alias"><a href="modules.html#WalletSetOwnersEvent" class="tsd-kind-icon">Wallet<wbr/>Set<wbr/>Owners<wbr/>Event</a></li><li class="tsd-kind-variable"><a href="modules.html#GOKI_ADDRESSES" class="tsd-kind-icon">GOKI_<wbr/>ADDRESSES</a></li><li class="tsd-kind-variable"><a href="modules.html#GOKI_IDLS" class="tsd-kind-icon">GOKI_<wbr/>IDLS</a></li><li class="tsd-kind-variable"><a href="modules.html#SmartWalletErrors" class="tsd-kind-icon">Smart<wbr/>Wallet<wbr/>Errors</a></li><li class="tsd-kind-variable"><a href="modules.html#SmartWalletJSON" class="tsd-kind-icon">Smart<wbr/>WalletJSON</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li><li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li><li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>
