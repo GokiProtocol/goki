@@ -1,0 +1,17 @@
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn mocha"
+
+[[test.genesis]]
+address = "GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH"
+program = "./target/deploy/smart_wallet.so"
+
+[[test.genesis]]
+address = "NFTUJzSHuUCsMMqMRJpB7PmbsaU7Wm51acdPk2FXMLn"
+program = "./target/deploy/token_signer.so"

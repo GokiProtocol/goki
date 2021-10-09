@@ -1,0 +1,24 @@
+[package]
+name = "smart-wallet"
+version = "0.1.0"
+description = "Multisig Solana wallet with Timelock capabilities"
+homepage = "https://goki.so"
+repository = "https://github.com/GokiProtocol/goki"
+authors = ["Goki Rajesh <goki@goki.so>"]
+license = "AGPL-3.0"
+edition = "2018"
+keywords = ["solana", "goki"]
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "smart_wallet"
+
+[features]
+no-entrypoint = []
+no-idl = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.17.0"
+vipers = "1.2.1"
