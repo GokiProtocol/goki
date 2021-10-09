@@ -4,6 +4,11 @@
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "repository": "https://github.com/GokiProtocol/goki.git",
+  "bugs": {
+    "url": "https://github.com/GokiProtocol/goki/issues",
+    "email": "team@goki.so"
+  },
+  "homepage": "https://goki.so",
   "license": "AGPL-3.0",
   "scripts": {
     "build": "rm -fr dist/ && tsc -P tsconfig.build.json && tsc -P tsconfig.esm.json",
