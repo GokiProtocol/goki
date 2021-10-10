@@ -139,6 +139,7 @@ pub mod smart_wallet {
 
     /// Creates a new [Transaction] account, automatically signed by the creator,
     /// which must be one of the owners of the smart_wallet.
+    #[access_control(ctx.accounts.validate())]
     pub fn create_transaction(
         ctx: Context<CreateTransaction>,
         bump: u8,
@@ -148,13 +149,13 @@ pub mod smart_wallet {
     }
 
     /// Creates a new [Transaction] account with time delay.
+    #[access_control(ctx.accounts.validate())]
     pub fn create_transaction_with_timelock(
         ctx: Context<CreateTransaction>,
         bump: u8,
         instruction: Instruction,
         eta: i64,
     ) -> ProgramResult {
-        ctx.accounts.validate()?;
         let smart_wallet = &ctx.accounts.smart_wallet;
         let owner_index = smart_wallet.owner_index(ctx.accounts.proposer.key())?;
 
