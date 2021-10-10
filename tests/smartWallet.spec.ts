@@ -17,7 +17,7 @@ describe("smartWallet", () => {
   const sdk = makeSDK();
   const program = sdk.programs.SmartWallet;
 
-  it("Tests the smartWallet program", async () => {
+  describe("Tests the smartWallet program", () => {
     const smartWalletBase = web3.Keypair.generate();
     const numOwners = 10; // Big enough.
 
@@ -28,83 +28,99 @@ describe("smartWallet", () => {
     const owners = [ownerA.publicKey, ownerB.publicKey, ownerC.publicKey];
 
     const threshold = new anchor.BN(2);
-    const { smartWalletWrapper, tx } = await sdk.newSmartWallet({
-      numOwners,
-      owners,
-      threshold,
-      base: smartWalletBase,
-    });
-    await expectTX(tx, "create new smartWallet").to.be.fulfilled;
 
-    await smartWalletWrapper.reloadData();
-    invariant(smartWalletWrapper.data, "smartWallet was not created");
-    expect(smartWalletWrapper.data.threshold).to.be.bignumber.equal(
-      new anchor.BN(2)
-    );
-    expect(smartWalletWrapper.data.owners).to.deep.equal(owners);
-    const [smartWalletKey, bump] = await findSmartWallet(
-      smartWalletWrapper.data.base
-    );
-    expect(smartWalletWrapper.data.bump).to.be.equal(bump);
+    let smartWalletWrapper: SmartWalletWrapper;
 
-    const newOwners = [ownerA.publicKey, ownerB.publicKey, ownerD.publicKey];
-    const data = program.coder.instruction.encode("set_owners", {
-      owners: newOwners,
-    });
-
-    const instruction = new TransactionInstruction({
-      programId: program.programId,
-      keys: [
+    before(async () => {
+      const { smartWalletWrapper: wrapperInner, tx } = await sdk.newSmartWallet(
         {
-          pubkey: smartWalletKey,
-          isWritable: true,
-          isSigner: true,
-        },
-      ],
-      data,
+          numOwners,
+          owners,
+          threshold,
+          base: smartWalletBase,
+        }
+      );
+      await expectTX(tx, "create new smartWallet").to.be.fulfilled;
+      smartWalletWrapper = wrapperInner;
     });
 
-    const { transactionKey, tx: proposeTx } =
-      await smartWalletWrapper.newTransaction({
-        proposer: ownerA.publicKey,
-        instruction,
+    it("happy path", async () => {
+      await smartWalletWrapper.reloadData();
+      invariant(smartWalletWrapper.data, "smartWallet was not created");
+      expect(smartWalletWrapper.data.threshold).to.be.bignumber.equal(
+        new anchor.BN(2)
+      );
+      expect(smartWalletWrapper.data.owners).to.deep.equal(owners);
+      const [smartWalletKey, bump] = await findSmartWallet(
+        smartWalletWrapper.data.base
+      );
+      expect(smartWalletWrapper.data.bump).to.be.equal(bump);
+
+      const newOwners = [ownerA.publicKey, ownerB.publicKey, ownerD.publicKey];
+      const data = program.coder.instruction.encode("set_owners", {
+        owners: newOwners,
       });
-    proposeTx.signers.push(ownerA);
-    await expectTX(proposeTx, "create a tx to be processed by the smartWallet")
-      .to.be.fulfilled;
 
-    const txAccount = await smartWalletWrapper.fetchTransaction(transactionKey);
-    expect(txAccount.executedAt.toNumber()).to.equal(-1);
-    expect(txAccount.ownerSetSeqno).to.equal(0);
-    expect(txAccount.instruction.programId, "program id").to.eqAddress(
-      program.programId
-    );
-    expect(txAccount.instruction.data, "data").to.deep.equal(data);
-    expect(txAccount.instruction.keys, "keys").to.deep.equal(instruction.keys);
-    expect(txAccount.smartWallet).to.eqAddress(smartWalletKey);
+      const instruction = new TransactionInstruction({
+        programId: program.programId,
+        keys: [
+          {
+            pubkey: smartWalletKey,
+            isWritable: true,
+            isSigner: true,
+          },
+        ],
+        data,
+      });
 
-    // Other owner approves transaction.
-    await expectTX(
-      smartWalletWrapper
-        .approveTransaction(transactionKey, ownerB.publicKey)
-        .addSigners(ownerB)
-    ).to.be.fulfilled;
+      const { transactionKey, tx: proposeTx } =
+        await smartWalletWrapper.newTransaction({
+          proposer: ownerA.publicKey,
+          instruction,
+        });
+      proposeTx.signers.push(ownerA);
+      await expectTX(
+        proposeTx,
+        "create a tx to be processed by the smartWallet"
+      ).to.be.fulfilled;
 
-    // Now that we've reached the threshold, send the transaction.
-    await expectTX(
-      (
-        await smartWalletWrapper.executeTransaction({
-          transactionKey,
-          owner: ownerA.publicKey,
-        })
-      ).addSigners(ownerA)
-    ).to.be.fulfilled;
+      const txAccount = await smartWalletWrapper.fetchTransaction(
+        transactionKey
+      );
+      expect(txAccount.executedAt.toNumber()).to.equal(-1);
+      expect(txAccount.ownerSetSeqno).to.equal(0);
+      expect(txAccount.instruction.programId, "program id").to.eqAddress(
+        program.programId
+      );
+      expect(txAccount.instruction.data, "data").to.deep.equal(data);
+      expect(txAccount.instruction.keys, "keys").to.deep.equal(
+        instruction.keys
+      );
+      expect(txAccount.smartWallet).to.eqAddress(smartWalletKey);
 
-    await smartWalletWrapper.reloadData();
-    expect(smartWalletWrapper.bump).to.be.equal(bump);
-    expect(smartWalletWrapper.data.ownerSetSeqno).to.equal(1);
-    expect(smartWalletWrapper.data.threshold).to.bignumber.equal(new BN(2));
-    expect(smartWalletWrapper.data.owners).to.deep.equal(newOwners);
+      // Other owner approves transaction.
+      await expectTX(
+        smartWalletWrapper
+          .approveTransaction(transactionKey, ownerB.publicKey)
+          .addSigners(ownerB)
+      ).to.be.fulfilled;
+
+      // Now that we've reached the threshold, send the transaction.
+      await expectTX(
+        (
+          await smartWalletWrapper.executeTransaction({
+            transactionKey,
+            owner: ownerA.publicKey,
+          })
+        ).addSigners(ownerA)
+      ).to.be.fulfilled;
+
+      await smartWalletWrapper.reloadData();
+      expect(smartWalletWrapper.bump).to.be.equal(bump);
+      expect(smartWalletWrapper.data.ownerSetSeqno).to.equal(1);
+      expect(smartWalletWrapper.data.threshold).to.bignumber.equal(new BN(2));
+      expect(smartWalletWrapper.data.owners).to.deep.equal(newOwners);
+    });
   });
 
   describe("Tests the smartWallet program with timelock", () => {
