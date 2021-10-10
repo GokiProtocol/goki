@@ -61,7 +61,7 @@ export class GokiSDK {
     threshold,
     numOwners,
     base = Keypair.generate(),
-    delay = 0,
+    delay = new BN(0),
   }: {
     owners: PublicKey[];
     threshold: BN;
@@ -73,7 +73,7 @@ export class GokiSDK {
     /**
      * Timelock delay in seconds
      */
-    delay?: number;
+    delay?: BN;
   }): Promise<PendingSmartWallet> {
     const [smartWallet, bump] = await findSmartWallet(base.publicKey);
 
@@ -82,7 +82,7 @@ export class GokiSDK {
       numOwners,
       owners,
       threshold,
-      new BN(delay),
+      delay,
       {
         accounts: {
           base: base.publicKey,
