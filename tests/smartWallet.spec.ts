@@ -2,14 +2,17 @@ import "chai-bn";
 
 import * as anchor from "@project-serum/anchor";
 import { expectTX } from "@saberhq/chai-solana";
-import { sleep } from "@saberhq/token-utils";
+import { sleep, u64 } from "@saberhq/token-utils";
 import { TransactionInstruction } from "@solana/web3.js";
 import { expect } from "chai";
 import invariant from "tiny-invariant";
 
 import { SmartWalletErrors } from "../src/idls/smart_wallet";
 import type { SmartWalletWrapper } from "../src/wrappers/smartWallet";
-import { findSmartWallet } from "../src/wrappers/smartWallet";
+import {
+  findSmartWallet,
+  findTransactionAddress,
+} from "../src/wrappers/smartWallet";
 import { makeSDK } from "./workspace";
 
 describe("smartWallet", () => {
@@ -112,7 +115,8 @@ describe("smartWallet", () => {
             transactionKey,
             owner: ownerA.publicKey,
           })
-        ).addSigners(ownerA)
+        ).addSigners(ownerA),
+        "execute transaction"
       ).to.be.fulfilled;
 
       await smartWalletWrapper.reloadData();
@@ -120,6 +124,105 @@ describe("smartWallet", () => {
       expect(smartWalletWrapper.data.ownerSetSeqno).to.equal(1);
       expect(smartWalletWrapper.data.threshold).to.bignumber.equal(new BN(2));
       expect(smartWalletWrapper.data.owners).to.deep.equal(newOwners);
+    });
+
+    it("owner set changed", async () => {
+      const [transactionKey] = await findTransactionAddress(
+        smartWalletWrapper.key,
+        0
+      );
+
+      let tx = smartWalletWrapper
+        .approveTransaction(transactionKey, ownerB.publicKey)
+        .addSigners(ownerB);
+      try {
+        await tx.confirm();
+      } catch (e) {
+        const err = e as Error;
+        expect(err.message).to.include(
+          `0x${SmartWalletErrors.OwnerSetChanged.code.toString(16)}`
+        );
+      }
+
+      tx = await smartWalletWrapper.executeTransaction({
+        transactionKey,
+        owner: ownerA.publicKey,
+      });
+      tx.addSigners(ownerA);
+
+      try {
+        await tx.confirm();
+      } catch (e) {
+        const err = e as Error;
+        expect(err.message).to.include(
+          `0x${SmartWalletErrors.OwnerSetChanged.code.toString(16)}`
+        );
+      }
+    });
+
+    it("transaciton execution is idempotent", async () => {
+      const newThreshold = new u64(1);
+      const data = program.coder.instruction.encode("change_threshold", {
+        threshold: newThreshold,
+      });
+
+      const instruction = new TransactionInstruction({
+        programId: program.programId,
+        keys: [
+          {
+            pubkey: smartWalletWrapper.key,
+            isWritable: true,
+            isSigner: true,
+          },
+        ],
+        data,
+      });
+      const { tx, transactionKey } = await smartWalletWrapper.newTransaction({
+        proposer: ownerA.publicKey,
+        instruction,
+      });
+      tx.signers.push(ownerA);
+      await expectTX(tx, "create new transaction");
+
+      // Sleep to make sure transaciton creation was finalized
+      await sleep(750);
+
+      // Other owner approves transaction.
+      await expectTX(
+        smartWalletWrapper
+          .approveTransaction(transactionKey, ownerB.publicKey)
+          .addSigners(ownerB),
+        "ownerB approves to transaction"
+      ).to.be.fulfilled;
+
+      // Now that we've reached the threshold, send the transaction.
+      await expectTX(
+        (
+          await smartWalletWrapper.executeTransaction({
+            transactionKey,
+            owner: ownerA.publicKey,
+          })
+        ).addSigners(ownerA),
+        "execute transaction"
+      ).to.be.fulfilled;
+
+      await smartWalletWrapper.reloadData();
+      expect(smartWalletWrapper.data?.threshold).to.bignumber.eq(newThreshold);
+
+      const execTxDuplicate = await smartWalletWrapper.executeTransaction({
+        transactionKey,
+        owner: ownerB.publicKey,
+      });
+      execTxDuplicate.addSigners(ownerB);
+
+      try {
+        await execTxDuplicate.confirm();
+      } catch (e) {
+        const err = e as Error;
+        expect(err.message).to.include(
+          `0x${SmartWalletErrors.AlreadyExecuted.code.toString(16)}`
+        );
+      }
     });
   });
 
@@ -239,7 +342,7 @@ describe("smartWallet", () => {
         );
       }
 
-      const sleepTime = eta.sub(new BN(Date.now() / 1000)).add(new BN(1));
+      const sleepTime = eta.sub(new BN(Date.now() / 1000)).add(new BN(5));
       await sleep(sleepTime.toNumber() * 1000);
 
       await expectTX(
