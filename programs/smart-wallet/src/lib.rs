@@ -60,6 +60,7 @@ pub mod smart_wallet {
     use super::*;
 
     /// Initializes a new [SmartWallet] account with a set of owners and a threshold.
+    #[access_control(ctx.accounts.validate())]
     pub fn create_smart_wallet(
         ctx: Context<CreateSmartWallet>,
         bump: u8,
@@ -68,7 +69,6 @@ pub mod smart_wallet {
         threshold: u64,
         minimum_delay: i64,
     ) -> ProgramResult {
-        ctx.accounts.validate()?;
         invariant!(minimum_delay >= 0, "delay must be positive");
         invariant!(minimum_delay < MAX_DELAY_SECONDS, "delay too high");
 
@@ -99,9 +99,8 @@ pub mod smart_wallet {
 
     /// Sets the owners field on the smart_wallet. The only way this can be invoked
     /// is via a recursive call from execute_transaction -> set_owners.
+    #[access_control(ctx.accounts.validate())]
     pub fn set_owners(ctx: Context<Auth>, owners: Vec<Pubkey>) -> ProgramResult {
-        ctx.accounts.validate()?;
-
         let smart_wallet = &mut ctx.accounts.smart_wallet;
         if (owners.len() as u64) < smart_wallet.threshold {
             smart_wallet.threshold = owners.len() as u64;
@@ -121,8 +120,8 @@ pub mod smart_wallet {
     /// Changes the execution threshold of the smart_wallet. The only way this can be
     /// invoked is via a recursive call from execute_transaction ->
     /// change_threshold.
+    #[access_control(ctx.accounts.validate())]
     pub fn change_threshold(ctx: Context<Auth>, threshold: u64) -> ProgramResult {
-        ctx.accounts.validate()?;
         require!(
             threshold <= ctx.accounts.smart_wallet.owners.len() as u64,
             InvalidThreshold
@@ -211,8 +210,8 @@ pub mod smart_wallet {
     }
 
     /// Approves a transaction on behalf of an owner of the smart_wallet.
+    #[access_control(ctx.accounts.validate())]
     pub fn approve(ctx: Context<Approve>) -> ProgramResult {
-        ctx.accounts.validate()?;
         let owner_index = ctx
             .accounts
             .smart_wallet
@@ -229,9 +228,8 @@ pub mod smart_wallet {
     }
 
     /// Executes the given transaction if threshold owners have signed it.
+    #[access_control(ctx.accounts.validate())]
     pub fn execute_transaction(ctx: Context<ExecuteTransaction>) -> ProgramResult {
-        ctx.accounts.validate()?;
-
         let smart_wallet = &ctx.accounts.smart_wallet;
 
         // Execute the transaction signed by the smart_wallet.
