@@ -70,7 +70,7 @@ pub mod smart_wallet {
         minimum_delay: i64,
     ) -> ProgramResult {
         invariant!(minimum_delay >= 0, "delay must be positive");
-        invariant!(minimum_delay < MAX_DELAY_SECONDS, "delay too high");
+        require!(minimum_delay < MAX_DELAY_SECONDS, DelayTooHigh);
 
         invariant!((max_owners as usize) >= owners.len(), "max_owners");
 
@@ -314,7 +314,7 @@ pub struct CreateTransaction<'info> {
         space = 8 + std::mem::size_of::<Transaction>() + instruction.space()
     )]
     pub transaction: Account<'info, Transaction>,
-    /// One of the owners. Checked in the handler.
+    /// One of the owners. Checked in the handler via [SmartWallet::owner_index].
     pub proposer: Signer<'info>,
     /// Payer to create the [Transaction].
     #[account(mut)]
