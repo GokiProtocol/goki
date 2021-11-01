@@ -139,7 +139,6 @@ pub mod smart_wallet {
 
     /// Creates a new [Transaction] account, automatically signed by the creator,
     /// which must be one of the owners of the smart_wallet.
-    #[access_control(ctx.accounts.validate())]
     pub fn create_transaction(
         ctx: Context<CreateTransaction>,
         bump: u8,
