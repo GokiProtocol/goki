@@ -59,6 +59,7 @@ impl<'info> Validate<'info> for ExecuteTransaction<'info> {
         let eta = self.transaction.eta;
         let clock = Clock::get()?;
         let current_ts = clock.unix_timestamp;
+        msg!("current_ts: {}; eta: {}", current_ts, eta);
         // Has transaction surpassed timelock?
         require!(current_ts >= eta, TransactionNotReady);
         if eta != NO_ETA {
