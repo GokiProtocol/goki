@@ -9,6 +9,8 @@
   "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
   "mochaExplorer.files": "tests/**/*.ts",
   "mochaExplorer.configFile": ".mocharc.js",
-  "mochaExplorer.require": ["mochasetup.js"],
+  "mochaExplorer.require": [
+    "mochasetup.js"
+  ],
   "mochaExplorer.logpanel": true
 }
