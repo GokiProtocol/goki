@@ -29,7 +29,7 @@
     "@saberhq/anchor-contrib": "^1.6.2",
     "@saberhq/chai-solana": "^1.6.2",
     "@saberhq/eslint-config": "^1.6.2",
-    "@saberhq/solana-contrib": "^1.6.2",
+    "@saberhq/solana-contrib": "^1.7.1",
     "@saberhq/token-utils": "^1.6.2",
     "@solana/spl-token-registry": "^0.2.287",
     "@solana/web3.js": "^1.30.2",
