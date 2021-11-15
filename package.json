@@ -31,7 +31,7 @@
     "@saberhq/eslint-config": "^1.6.2",
     "@saberhq/solana-contrib": "^1.6.2",
     "@saberhq/token-utils": "^1.6.2",
-    "@solana/spl-token-registry": "^0.2.287",
+    "@solana/spl-token-registry": "^0.2.293",
     "@solana/web3.js": "^1.30.2",
     "@types/bn.js": "^5.1.0",
     "@types/chai": "^4.2.22",
