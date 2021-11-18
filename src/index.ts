@@ -1,4 +1,4 @@
 export * from "./constants";
 export * from "./programs";
 export * from "./sdk";
-export * as MultisigWrapper from "./wrappers/smartWallet";
+export * as SmartWallet from "./wrappers/smartWallet";
