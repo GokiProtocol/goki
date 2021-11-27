@@ -1,7 +1,7 @@
 //! Account validators.
 
 use crate::*;
-use vipers::{assert_keys, invariant, unwrap_int, validate::Validate};
+use vipers::{assert_keys_eq, invariant, unwrap_int, validate::Validate};
 
 impl<'info> Validate<'info> for CreateSmartWallet<'info> {
     fn validate(&self) -> ProgramResult {
@@ -28,7 +28,7 @@ impl<'info> Validate<'info> for CreateTransaction<'info> {
 
 impl<'info> Validate<'info> for Approve<'info> {
     fn validate(&self) -> ProgramResult {
-        assert_keys!(
+        assert_keys_eq!(
             self.smart_wallet,
             self.transaction.smart_wallet,
             "smart_wallet"
@@ -43,7 +43,7 @@ impl<'info> Validate<'info> for Approve<'info> {
 
 impl<'info> Validate<'info> for ExecuteTransaction<'info> {
     fn validate(&self) -> ProgramResult {
-        assert_keys!(
+        assert_keys_eq!(
             self.smart_wallet,
             self.transaction.smart_wallet,
             "smart_wallet"

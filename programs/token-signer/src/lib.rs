@@ -7,7 +7,7 @@ use anchor_lang::solana_program::instruction::Instruction;
 use anchor_lang::solana_program::program::invoke_signed;
 use anchor_lang::Key;
 use anchor_spl::token::TokenAccount;
-use vipers::assert_keys;
+use vipers::assert_keys_eq;
 use vipers::validate::Validate;
 
 mod account_validators;
@@ -29,7 +29,7 @@ pub mod token_signer {
         let (nft_addr, bump) = Pubkey::find_program_address(seeds, ctx.program_id);
         let full_seeds = &[b"GokiTokenSigner" as &[u8], &mint, &[bump]];
 
-        assert_keys!(nft_addr, ctx.accounts.nft_pda, "nft_pda");
+        assert_keys_eq!(nft_addr, ctx.accounts.nft_pda, "nft_pda");
 
         let accounts: Vec<AccountMeta> = ctx
             .remaining_accounts
