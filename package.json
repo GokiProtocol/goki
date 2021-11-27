@@ -44,7 +44,6 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-bn": "^0.3.0",
-    "crypto-hash": "^1.3.0",
     "eslint": "^8.3.0",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-plugin-import": "^2.25.3",
@@ -77,10 +76,5 @@
     "*.{ts,tsx}": "eslint --fix --cache",
     "*.{css,md,json,webmanifest,yml,yaml,js,jsx,html,yml,yaml}": "prettier --write"
   },
-  "packageManager": "yarn@3.1.1",
-  "dependenciesMeta": {
-    "crypto-hash@1.3.0": {
-      "unplugged": true
-    }
-  }
+  "packageManager": "yarn@3.1.1"
 }
