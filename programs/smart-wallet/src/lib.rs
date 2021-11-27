@@ -30,15 +30,14 @@ use vipers::unwrap_int;
 use vipers::unwrap_or_err;
 use vipers::validate::Validate;
 
+mod events;
 mod smart_wallet_utils;
+mod state;
 mod transaction;
 mod validators;
 
-pub mod events;
-pub mod state;
-
-use events::*;
-use state::*;
+pub use events::*;
+pub use state::*;
 
 /// Number of seconds in a day.
 pub const SECONDS_PER_DAY: i64 = 60 * 60 * 24;
