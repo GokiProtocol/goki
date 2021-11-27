@@ -66,7 +66,11 @@ export class SmartWalletWrapper {
     });
   }
 
-  public async newTransaction({
+  /**
+   * Proposes a new transaction.
+   * @returns
+   */
+  async newTransaction({
     proposer = this.provider.wallet.publicKey,
     payer = this.provider.wallet.publicKey,
     instruction,
@@ -115,18 +119,26 @@ export class SmartWalletWrapper {
   }
 
   /**
+   * Fetches a transaction by its index.
+   */
+  async fetchTransactionByIndex(
+    index: number
+  ): Promise<SmartWalletTransactionData | null> {
+    const [txKey] = await findTransactionAddress(this.key, index);
+    return await this.program.account.transaction.fetchNullable(txKey);
+  }
+
+  /**
    * fetchTransaction
    */
-  public async fetchTransaction(
-    key: PublicKey
-  ): Promise<SmartWalletTransactionData> {
+  async fetchTransaction(key: PublicKey): Promise<SmartWalletTransactionData> {
     return await this.program.account.transaction.fetch(key);
   }
 
   /**
    * Approves a transaction.
    */
-  public approveTransaction(
+  approveTransaction(
     transactionKey: PublicKey,
     owner: PublicKey = this.provider.wallet.publicKey
   ): TransactionEnvelope {
@@ -144,7 +156,7 @@ export class SmartWalletWrapper {
   /**
    * executeTransaction
    */
-  public async executeTransaction({
+  async executeTransaction({
     transactionKey,
     owner = this.provider.wallet.publicKey,
   }: {
@@ -182,7 +194,7 @@ export class SmartWalletWrapper {
   /**
    * setOwners
    */
-  public setOwners(owners: PublicKey[]): TransactionEnvelope {
+  setOwners(owners: PublicKey[]): TransactionEnvelope {
     const ix = this.program.instruction.setOwners(owners, {
       accounts: {
         smartWallet: this.key,
@@ -194,7 +206,7 @@ export class SmartWalletWrapper {
   /**
    * changeThreshold
    */
-  public changeThreshold(threshold: number): TransactionEnvelope {
+  changeThreshold(threshold: number): TransactionEnvelope {
     const ix = this.program.instruction.changeThreshold(new BN(threshold), {
       accounts: {
         smartWallet: this.key,

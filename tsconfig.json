@@ -3,11 +3,13 @@
     "target": "ES2015",
     "module": "CommonJS",
     "moduleResolution": "node",
+
     "strict": true,
-    "strictFunctionTypes": true,
     "noImplicitOverride": true,
-    "esModuleInterop": true,
     "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+
+    "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
