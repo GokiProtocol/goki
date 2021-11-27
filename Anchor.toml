@@ -1,3 +1,5 @@
+anchor_version = "0.18.0"
+
 [registry]
 url = "https://anchor.projectserum.com"
 
