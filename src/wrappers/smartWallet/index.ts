@@ -73,12 +73,12 @@ export class SmartWalletWrapper {
   async newTransaction({
     proposer = this.provider.wallet.publicKey,
     payer = this.provider.wallet.publicKey,
-    instruction,
+    instructions: ixs,
     eta,
   }: {
     readonly proposer?: PublicKey;
     readonly payer?: PublicKey;
-    readonly instruction: TransactionInstruction;
+    readonly instructions: TransactionInstruction[];
     readonly eta?: BN;
   }): Promise<PendingSmartWalletTransaction> {
     const [txKey, txBump] = await findTransactionAddress(
@@ -95,7 +95,7 @@ export class SmartWalletWrapper {
     const instructions: TransactionInstruction[] = [];
     if (eta === undefined) {
       instructions.push(
-        this.program.instruction.createTransaction(txBump, instruction, {
+        this.program.instruction.createTransaction(txBump, ixs, {
           accounts,
         })
       );
@@ -103,7 +103,7 @@ export class SmartWalletWrapper {
       instructions.push(
         this.program.instruction.createTransactionWithTimelock(
           txBump,
-          instruction,
+          ixs,
           eta,
           {
             accounts,
@@ -170,13 +170,13 @@ export class SmartWalletWrapper {
         transaction: transactionKey,
         owner,
       },
-      remainingAccounts: [
+      remainingAccounts: data.instructions.flatMap((ix) => [
         {
-          pubkey: data.instruction.programId,
+          pubkey: ix.programId,
           isSigner: false,
           isWritable: false,
         },
-        ...data.instruction.keys.map((k) => {
+        ...ix.keys.map((k) => {
           if (k.pubkey.equals(this.key) && k.isSigner) {
             return {
               ...k,
@@ -185,7 +185,7 @@ export class SmartWalletWrapper {
           }
           return k;
         }),
-      ],
+      ]),
     });
 
     return new TransactionEnvelope(this.provider, [ix]);
