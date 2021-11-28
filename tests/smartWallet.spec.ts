@@ -79,7 +79,7 @@ describe("smartWallet", () => {
       const { transactionKey, tx: proposeTx } =
         await smartWalletWrapper.newTransaction({
           proposer: ownerA.publicKey,
-          instruction,
+          instructions: [instruction],
         });
       proposeTx.signers.push(ownerA);
       await expectTX(
@@ -92,11 +92,11 @@ describe("smartWallet", () => {
       );
       expect(txAccount.executedAt.toNumber()).to.equal(-1);
       expect(txAccount.ownerSetSeqno).to.equal(0);
-      expect(txAccount.instruction.programId, "program id").to.eqAddress(
+      expect(txAccount.instructions[0]?.programId, "program id").to.eqAddress(
         program.programId
       );
-      expect(txAccount.instruction.data, "data").to.deep.equal(data);
-      expect(txAccount.instruction.keys, "keys").to.deep.equal(
+      expect(txAccount.instructions[0]?.data, "data").to.deep.equal(data);
+      expect(txAccount.instructions[0]?.keys, "keys").to.deep.equal(
         instruction.keys
       );
       expect(txAccount.smartWallet).to.eqAddress(smartWalletKey);
@@ -160,7 +160,7 @@ describe("smartWallet", () => {
       }
     });
 
-    it("transaciton execution is idempotent", async () => {
+    it("transaction execution is idempotent", async () => {
       const newThreshold = new u64(1);
       const data = program.coder.instruction.encode("change_threshold", {
         threshold: newThreshold,
@@ -179,12 +179,12 @@ describe("smartWallet", () => {
       });
       const { tx, transactionKey } = await smartWalletWrapper.newTransaction({
         proposer: ownerA.publicKey,
-        instruction,
+        instructions: [instruction],
       });
       tx.signers.push(ownerA);
       await expectTX(tx, "create new transaction");
 
-      // Sleep to make sure transaciton creation was finalized
+      // Sleep to make sure transaction creation was finalized
       await sleep(750);
 
       // Other owner approves transaction.
@@ -279,7 +279,7 @@ describe("smartWallet", () => {
 
       const { tx } = await smartWalletWrapper.newTransaction({
         proposer: ownerB.publicKey,
-        instruction,
+        instructions: [instruction],
       });
       tx.signers.push(ownerB);
 
@@ -321,7 +321,7 @@ describe("smartWallet", () => {
       );
       const { transactionKey, tx } = await smartWalletWrapper.newTransaction({
         proposer: ownerB.publicKey,
-        instruction,
+        instructions: [instruction],
         eta,
       });
       tx.signers.push(ownerB);

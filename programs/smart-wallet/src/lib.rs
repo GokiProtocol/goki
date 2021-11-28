@@ -141,9 +141,9 @@ pub mod smart_wallet {
     pub fn create_transaction(
         ctx: Context<CreateTransaction>,
         bump: u8,
-        instruction: Instruction,
+        instructions: Vec<Instruction>,
     ) -> ProgramResult {
-        create_transaction_with_timelock(ctx, bump, instruction, NO_ETA)
+        create_transaction_with_timelock(ctx, bump, instructions, NO_ETA)
     }
 
     /// Creates a new [Transaction] account with time delay.
@@ -151,7 +151,7 @@ pub mod smart_wallet {
     pub fn create_transaction_with_timelock(
         ctx: Context<CreateTransaction>,
         bump: u8,
-        instruction: Instruction,
+        instructions: Vec<Instruction>,
         eta: i64,
     ) -> ProgramResult {
         let smart_wallet = &ctx.accounts.smart_wallet;
@@ -189,7 +189,7 @@ pub mod smart_wallet {
         tx.bump = bump;
 
         tx.proposer = ctx.accounts.proposer.key();
-        tx.instruction = instruction.clone();
+        tx.instructions = instructions.clone();
         tx.signers = signers;
         tx.owner_set_seqno = smart_wallet.owner_set_seqno;
         tx.eta = eta;
@@ -201,7 +201,7 @@ pub mod smart_wallet {
             smart_wallet: ctx.accounts.smart_wallet.key(),
             transaction: ctx.accounts.transaction.key(),
             proposer: ctx.accounts.proposer.key(),
-            instruction,
+            instructions,
             eta,
             timestamp: Clock::get()?.unix_timestamp
         });
@@ -238,11 +238,13 @@ pub mod smart_wallet {
             &[smart_wallet.bump],
         ];
         let signers_seeds = &[&seeds[..]];
-        solana_program::program::invoke_signed(
-            &(&ctx.accounts.transaction.instruction).into(),
-            ctx.remaining_accounts,
-            signers_seeds,
-        )?;
+        for ix in ctx.accounts.transaction.instructions.iter() {
+            solana_program::program::invoke_signed(
+                &(ix).into(),
+                ctx.remaining_accounts,
+                signers_seeds,
+            )?;
+        }
 
         // Burn the transaction to ensure one time use.
         ctx.accounts.transaction.executor = ctx.accounts.owner.key();
@@ -295,7 +297,7 @@ pub struct Auth<'info> {
 
 /// Accounts for [smart_wallet::create_transaction].
 #[derive(Accounts)]
-#[instruction(bump: u8, instruction: Instruction)]
+#[instruction(bump: u8, instructions: Vec<Instruction>)]
 pub struct CreateTransaction<'info> {
     /// The [SmartWallet].
     #[account(mut)]
@@ -310,7 +312,7 @@ pub struct CreateTransaction<'info> {
         ],
         bump = bump,
         payer = payer,
-        space = 8 + std::mem::size_of::<Transaction>() + instruction.space()
+        space = 8 + std::mem::size_of::<Transaction>() + (instructions.iter().map(|ix| ix.space()).sum::<usize>())
     )]
     pub transaction: Account<'info, Transaction>,
     /// One of the owners. Checked in the handler via [SmartWallet::owner_index].

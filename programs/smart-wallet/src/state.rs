@@ -45,7 +45,7 @@ pub struct Transaction {
     /// The proposer of the [Transaction].
     pub proposer: Pubkey,
     /// The instruction.
-    pub instruction: Instruction,
+    pub instructions: Vec<Instruction>,
     /// `signers[index]` is true iff `[SmartWallet]::owners[index]` signed the transaction.
     pub signers: Vec<bool>,
     /// Owner set sequence number.
