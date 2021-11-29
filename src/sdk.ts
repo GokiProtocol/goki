@@ -1,16 +1,13 @@
-import type { Address } from "@project-serum/anchor";
-import { BN, Program, Provider as AnchorProvider } from "@project-serum/anchor";
-import type { Provider } from "@saberhq/solana-contrib";
+import { BN } from "@project-serum/anchor";
+import { newProgramMap } from "@saberhq/anchor-contrib";
+import type { AugmentedProvider, Provider } from "@saberhq/solana-contrib";
 import {
-  DEFAULT_PROVIDER_OPTIONS,
-  SignerWallet,
-  SolanaProvider,
+  SolanaAugmentedProvider,
   TransactionEnvelope,
 } from "@saberhq/solana-contrib";
-import type { ConfirmOptions, PublicKey, Signer } from "@solana/web3.js";
+import type { PublicKey, Signer } from "@solana/web3.js";
 import { Keypair, SystemProgram } from "@solana/web3.js";
 import mapValues from "lodash.mapvalues";
-import invariant from "tiny-invariant";
 
 import type { Programs } from "./constants";
 import { GOKI_ADDRESSES, GOKI_IDLS } from "./constants";
@@ -22,41 +19,31 @@ import { findSmartWallet, SmartWalletWrapper } from "./wrappers/smartWallet";
  */
 export class GokiSDK {
   constructor(
-    public readonly provider: Provider,
+    public readonly provider: AugmentedProvider,
     public readonly programs: Programs
   ) {}
 
   /**
    * Creates a new instance of the SDK with the given keypair.
    */
-  public withSigner(signer: Signer): GokiSDK {
-    const provider = new SolanaProvider(
-      this.provider.connection,
-      this.provider.broadcaster,
-      new SignerWallet(signer),
-      this.provider.opts
-    );
+  withSigner(signer: Signer): GokiSDK {
     return GokiSDK.load({
-      provider,
+      provider: this.provider.withSigner(signer),
       addresses: mapValues(this.programs, (v) => v.programId),
     });
-  }
-
-  get programList(): Program[] {
-    return Object.values(this.programs) as Program[];
   }
 
   /**
    * loadSmartWallet
    */
-  public loadSmartWallet(key: PublicKey): Promise<SmartWalletWrapper> {
+  loadSmartWallet(key: PublicKey): Promise<SmartWalletWrapper> {
     return SmartWalletWrapper.load(this, key);
   }
 
   /**
    * Create a new multisig account
    */
-  public async newSmartWallet({
+  async newSmartWallet({
     owners,
     threshold,
     numOwners,
@@ -107,32 +94,17 @@ export class GokiSDK {
    * Loads the SDK.
    * @returns
    */
-  public static load({
+  static load({
     provider,
     addresses = GOKI_ADDRESSES,
-    confirmOptions,
   }: {
     // Provider
     provider: Provider;
     // Addresses of each program.
-    addresses?: { [K in keyof Programs]?: Address };
-    confirmOptions?: ConfirmOptions;
+    addresses?: { [K in keyof Programs]?: PublicKey };
   }): GokiSDK {
     const allAddresses = { ...GOKI_ADDRESSES, ...addresses };
-    const programs: Programs = mapValues(
-      GOKI_ADDRESSES,
-      (_: Address, programName: keyof Programs): Program => {
-        const address = allAddresses[programName];
-        const idl = GOKI_IDLS[programName];
-        invariant(idl, `Unknown IDL: ${programName}`);
-        const anchorProvider = new AnchorProvider(
-          provider.connection,
-          provider.wallet,
-          confirmOptions ?? DEFAULT_PROVIDER_OPTIONS
-        );
-        return new Program(idl, address, anchorProvider) as unknown as Program;
-      }
-    ) as unknown as Programs;
-    return new GokiSDK(provider, programs);
+    const programs = newProgramMap<Programs>(provider, GOKI_IDLS, allAddresses);
+    return new GokiSDK(new SolanaAugmentedProvider(provider), programs);
   }
 }
