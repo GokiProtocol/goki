@@ -1,4 +1,4 @@
-import type { Provider } from "@saberhq/solana-contrib";
+import type { AugmentedProvider } from "@saberhq/solana-contrib";
 import { TransactionEnvelope } from "@saberhq/solana-contrib";
 import type { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { SystemProgram } from "@solana/web3.js";
@@ -33,7 +33,7 @@ export class SmartWalletWrapper {
     this.program = sdk.programs.SmartWallet;
   }
 
-  get provider(): Provider {
+  get provider(): AugmentedProvider {
     return this.sdk.provider;
   }
 
