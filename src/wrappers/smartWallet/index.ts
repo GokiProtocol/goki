@@ -1,4 +1,4 @@
-import type { Provider } from "@saberhq/solana-contrib";
+import type { AugmentedProvider } from "@saberhq/solana-contrib";
 import { TransactionEnvelope } from "@saberhq/solana-contrib";
 import type { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { SystemProgram } from "@solana/web3.js";
@@ -13,6 +13,7 @@ import type { GokiSDK } from "../../sdk";
 import { findTransactionAddress } from "./pda";
 import type {
   InitSmartWalletWrapperArgs,
+  NewTransactionArgs,
   PendingSmartWalletTransaction,
 } from "./types";
 
@@ -32,7 +33,7 @@ export class SmartWalletWrapper {
     this.program = sdk.programs.SmartWallet;
   }
 
-  get provider(): Provider {
+  get provider(): AugmentedProvider {
     return this.sdk.provider;
   }
 
@@ -43,27 +44,11 @@ export class SmartWalletWrapper {
   /**
    * reloadData
    */
-  public async reloadData(): Promise<SmartWalletData> {
+  async reloadData(): Promise<SmartWalletData> {
     this._data = await this.sdk.programs.SmartWallet.account.smartWallet.fetch(
       this.key
     );
     return this._data;
-  }
-
-  /**
-   * Loads a smartWallet
-   */
-  public static async load(
-    sdk: GokiSDK,
-    key: PublicKey
-  ): Promise<SmartWalletWrapper> {
-    const data = await sdk.programs.SmartWallet.account.smartWallet.fetch(key);
-    return new SmartWalletWrapper(sdk, {
-      key,
-      data,
-      bump: data.bump,
-      base: data.base,
-    });
   }
 
   /**
@@ -75,16 +60,9 @@ export class SmartWalletWrapper {
     payer = this.provider.wallet.publicKey,
     instructions: ixs,
     eta,
-  }: {
-    readonly proposer?: PublicKey;
-    readonly payer?: PublicKey;
-    readonly instructions: TransactionInstruction[];
-    readonly eta?: BN;
-  }): Promise<PendingSmartWalletTransaction> {
-    const [txKey, txBump] = await findTransactionAddress(
-      this.key,
-      (await this.reloadData()).numTransactions.toNumber()
-    );
+  }: NewTransactionArgs): Promise<PendingSmartWalletTransaction> {
+    const index = (await this.reloadData()).numTransactions.toNumber();
+    const [txKey, txBump] = await findTransactionAddress(this.key, index);
     const accounts = {
       smartWallet: this.key,
       transaction: txKey,
@@ -115,7 +93,24 @@ export class SmartWalletWrapper {
     return {
       transactionKey: txKey,
       tx: new TransactionEnvelope(this.provider, instructions),
+      index,
     };
+  }
+
+  /**
+   * Creates a new transaction from an envelope.
+   * @returns
+   */
+  async newTransactionFromEnvelope({
+    tx,
+    ...args
+  }: Omit<NewTransactionArgs, "instructions"> & {
+    tx: TransactionEnvelope;
+  }): Promise<PendingSmartWalletTransaction> {
+    return this.newTransaction({
+      ...args,
+      instructions: tx.instructions,
+    });
   }
 
   /**
@@ -213,5 +208,18 @@ export class SmartWalletWrapper {
       },
     });
     return new TransactionEnvelope(this.provider, [ix]);
+  }
+
+  /**
+   * Loads a SmartWallet
+   */
+  static async load(sdk: GokiSDK, key: PublicKey): Promise<SmartWalletWrapper> {
+    const data = await sdk.programs.SmartWallet.account.smartWallet.fetch(key);
+    return new SmartWalletWrapper(sdk, {
+      key,
+      data,
+      bump: data.bump,
+      base: data.base,
+    });
   }
 }
