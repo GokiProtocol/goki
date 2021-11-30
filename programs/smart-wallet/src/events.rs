@@ -56,6 +56,17 @@ pub struct TransactionApproveEvent {
     pub timestamp: i64,
 }
 
+/// Emitted when a [Transaction] is unapproved.
+#[event]
+pub struct TransactionUnapproveEvent {
+    #[index]
+    pub smart_wallet: Pubkey,
+    #[index]
+    pub transaction: Pubkey,
+    pub owner: Pubkey,
+    pub timestamp: i64,
+}
+
 /// Emitted when a [Transaction] is executed.
 #[event]
 pub struct TransactionExecuteEvent {
