@@ -226,6 +226,24 @@ pub mod smart_wallet {
         Ok(())
     }
 
+    /// Unapproves a transaction on behalf of an owner of the smart_wallet.
+    #[access_control(ctx.accounts.validate())]
+    pub fn unapprove(ctx: Context<Approve>) -> ProgramResult {
+        let owner_index = ctx
+            .accounts
+            .smart_wallet
+            .owner_index(ctx.accounts.owner.key())?;
+        ctx.accounts.transaction.signers[owner_index] = false;
+
+        emit!(TransactionUnapproveEvent {
+            smart_wallet: ctx.accounts.smart_wallet.key(),
+            transaction: ctx.accounts.transaction.key(),
+            owner: ctx.accounts.owner.key(),
+            timestamp: Clock::get()?.unix_timestamp
+        });
+        Ok(())
+    }
+
     /// Executes the given transaction if threshold owners have signed it.
     #[access_control(ctx.accounts.validate())]
     pub fn execute_transaction(ctx: Context<ExecuteTransaction>) -> ProgramResult {
