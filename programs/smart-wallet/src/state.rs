@@ -71,7 +71,7 @@ pub struct TXInstruction {
 }
 
 impl TXInstruction {
-    /// Space that an [Instruction] takes up.
+    /// Space that a [TXInstruction] takes up.
     pub fn space(&self) -> usize {
         std::mem::size_of::<Pubkey>()
             + (self.keys.len() as usize) * std::mem::size_of::<TXAccountMeta>()
@@ -79,7 +79,7 @@ impl TXInstruction {
     }
 }
 
-/// Account metadata used to define Instructions
+/// Account metadata used to define [TXInstruction]s
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, PartialEq, Copy, Clone)]
 pub struct TXAccountMeta {
     /// An account's public key
