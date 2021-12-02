@@ -141,7 +141,7 @@ pub mod smart_wallet {
     pub fn create_transaction(
         ctx: Context<CreateTransaction>,
         bump: u8,
-        instructions: Vec<Instruction>,
+        instructions: Vec<TXInstruction>,
     ) -> ProgramResult {
         create_transaction_with_timelock(ctx, bump, instructions, NO_ETA)
     }
@@ -151,7 +151,7 @@ pub mod smart_wallet {
     pub fn create_transaction_with_timelock(
         ctx: Context<CreateTransaction>,
         bump: u8,
-        instructions: Vec<Instruction>,
+        instructions: Vec<TXInstruction>,
         eta: i64,
     ) -> ProgramResult {
         let smart_wallet = &ctx.accounts.smart_wallet;
@@ -315,7 +315,7 @@ pub struct Auth<'info> {
 
 /// Accounts for [smart_wallet::create_transaction].
 #[derive(Accounts)]
-#[instruction(bump: u8, instructions: Vec<Instruction>)]
+#[instruction(bump: u8, instructions: Vec<TXInstruction>)]
 pub struct CreateTransaction<'info> {
     /// The [SmartWallet].
     #[account(mut)]

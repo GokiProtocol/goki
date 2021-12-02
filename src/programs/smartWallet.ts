@@ -12,8 +12,8 @@ export type SmartWalletTypes = AnchorTypes<
     transaction: SmartWalletTransactionData;
   },
   {
-    Instruction: SmartWalletInstruction;
-    AccountMeta: AccountMeta;
+    TXInstruction: SmartWalletInstruction;
+    TXAccountMeta: AccountMeta;
   }
 >;
 
@@ -22,7 +22,7 @@ export type SmartWalletData = Accounts["SmartWallet"];
 export type SmartWalletTransactionData = Accounts["Transaction"];
 
 export type SmartWalletInstruction = Omit<
-  AnchorDefined<SmartWalletIDL>["Instruction"],
+  AnchorDefined<SmartWalletIDL>["TXInstruction"],
   "keys"
 > & {
   keys: AccountMeta[];

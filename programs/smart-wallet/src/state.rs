@@ -45,7 +45,7 @@ pub struct Transaction {
     /// The proposer of the [Transaction].
     pub proposer: Pubkey,
     /// The instruction.
-    pub instructions: Vec<Instruction>,
+    pub instructions: Vec<TXInstruction>,
     /// `signers[index]` is true iff `[SmartWallet]::owners[index]` signed the transaction.
     pub signers: Vec<bool>,
     /// Owner set sequence number.
@@ -61,27 +61,27 @@ pub struct Transaction {
 
 /// Instruction.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Default, PartialEq)]
-pub struct Instruction {
+pub struct TXInstruction {
     /// Pubkey of the instruction processor that executes this instruction
     pub program_id: Pubkey,
     /// Metadata for what accounts should be passed to the instruction processor
-    pub keys: Vec<AccountMeta>,
+    pub keys: Vec<TXAccountMeta>,
     /// Opaque data passed to the instruction processor
     pub data: Vec<u8>,
 }
 
-impl Instruction {
+impl TXInstruction {
     /// Space that an [Instruction] takes up.
     pub fn space(&self) -> usize {
         std::mem::size_of::<Pubkey>()
-            + (self.keys.len() as usize) * std::mem::size_of::<AccountMeta>()
+            + (self.keys.len() as usize) * std::mem::size_of::<TXAccountMeta>()
             + (self.data.len() as usize)
     }
 }
 
 /// Account metadata used to define Instructions
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, PartialEq, Copy, Clone)]
-pub struct AccountMeta {
+pub struct TXAccountMeta {
     /// An account's public key
     pub pubkey: Pubkey,
     /// True if an Instruction requires a Transaction signature matching `pubkey`.
@@ -90,8 +90,8 @@ pub struct AccountMeta {
     pub is_writable: bool,
 }
 
-impl From<&Instruction> for solana_program::instruction::Instruction {
-    fn from(tx: &Instruction) -> solana_program::instruction::Instruction {
+impl From<&TXInstruction> for solana_program::instruction::Instruction {
+    fn from(tx: &TXInstruction) -> solana_program::instruction::Instruction {
         solana_program::instruction::Instruction {
             program_id: tx.program_id,
             accounts: tx.keys.clone().into_iter().map(Into::into).collect(),
@@ -100,13 +100,13 @@ impl From<&Instruction> for solana_program::instruction::Instruction {
     }
 }
 
-impl From<AccountMeta> for solana_program::instruction::AccountMeta {
+impl From<TXAccountMeta> for solana_program::instruction::AccountMeta {
     fn from(
-        AccountMeta {
+        TXAccountMeta {
             pubkey,
             is_signer,
             is_writable,
-        }: AccountMeta,
+        }: TXAccountMeta,
     ) -> solana_program::instruction::AccountMeta {
         solana_program::instruction::AccountMeta {
             pubkey,

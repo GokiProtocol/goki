@@ -40,7 +40,7 @@ pub struct TransactionCreateEvent {
     pub transaction: Pubkey,
     pub proposer: Pubkey,
     /// Instructions associated with the [Transaction].
-    pub instructions: Vec<Instruction>,
+    pub instructions: Vec<TXInstruction>,
     pub eta: i64,
     pub timestamp: i64,
 }
