@@ -262,7 +262,7 @@ pub mod smart_wallet {
     #[access_control(ctx.accounts.validate())]
     pub fn execute_transaction_derived(
         ctx: Context<ExecuteTransaction>,
-        nonce: u64,
+        index: u64,
         bump: u8,
     ) -> ProgramResult {
         let smart_wallet = &ctx.accounts.smart_wallet;
@@ -270,7 +270,7 @@ pub mod smart_wallet {
         let wallet_seeds: &[&[&[u8]]] = &[&[
             b"GokiSmartWalletDerived" as &[u8],
             &smart_wallet.key().to_bytes(),
-            &nonce.to_le_bytes(),
+            &index.to_le_bytes(),
             &[bump],
         ]];
         do_execute_transaction(ctx, wallet_seeds)

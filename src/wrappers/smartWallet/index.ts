@@ -10,7 +10,7 @@ import type {
   SmartWalletTransactionData,
 } from "../../programs";
 import type { GokiSDK } from "../../sdk";
-import { findTransactionAddress } from "./pda";
+import { findTransactionAddress, findWalletDerivedAddress } from "./pda";
 import type {
   InitSmartWalletWrapperArgs,
   NewTransactionArgs,
@@ -158,8 +158,25 @@ export class SmartWalletWrapper {
     transactionKey: PublicKey;
     owner?: PublicKey;
   }): Promise<TransactionEnvelope> {
+    const ix = this.program.instruction.executeTransaction(
+      await this.fetchExecuteTransactionContext({ transactionKey, owner })
+    );
+    return new TransactionEnvelope(this.provider, [ix]);
+  }
+
+  async findWalletDerivedAddress(index: number): Promise<[PublicKey, number]> {
+    return await findWalletDerivedAddress(this.key, index);
+  }
+
+  private async fetchExecuteTransactionContext({
+    transactionKey,
+    owner = this.provider.wallet.publicKey,
+  }: {
+    transactionKey: PublicKey;
+    owner?: PublicKey;
+  }) {
     const data = await this.fetchTransaction(transactionKey);
-    const ix = this.program.instruction.executeTransaction({
+    return {
       accounts: {
         smartWallet: this.key,
         transaction: transactionKey,
@@ -181,8 +198,28 @@ export class SmartWalletWrapper {
           return k;
         }),
       ]),
-    });
+    };
+  }
 
+  /**
+   * executeTransaction
+   */
+  async executeTransactionDerived({
+    transactionKey,
+    walletIndex,
+    owner = this.provider.wallet.publicKey,
+  }: {
+    transactionKey: PublicKey;
+    walletIndex: number;
+    owner?: PublicKey;
+  }): Promise<TransactionEnvelope> {
+    const [_walletDerivedAddress, walletBump] =
+      await this.findWalletDerivedAddress(walletIndex);
+    const ix = this.program.instruction.executeTransactionDerived(
+      walletIndex,
+      walletBump,
+      await this.fetchExecuteTransactionContext({ transactionKey, owner })
+    );
     return new TransactionEnvelope(this.provider, [ix]);
   }
 
