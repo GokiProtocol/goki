@@ -294,7 +294,7 @@ pub struct CreateSmartWallet<'info> {
         ],
         bump = bump,
         payer = payer,
-        space = 8 + std::mem::size_of::<SmartWallet>() + std::mem::size_of::<Pubkey>() * (max_owners as usize) + 100
+        space = SmartWallet::space(max_owners),
     )]
     pub smart_wallet: Account<'info, SmartWallet>,
 
@@ -330,7 +330,7 @@ pub struct CreateTransaction<'info> {
         ],
         bump = bump,
         payer = payer,
-        space = 8 + std::mem::size_of::<Transaction>() + (instructions.iter().map(|ix| ix.space()).sum::<usize>())
+        space = Transaction::space(instructions),
     )]
     pub transaction: Account<'info, Transaction>,
     /// One of the owners. Checked in the handler via [SmartWallet::owner_index].
