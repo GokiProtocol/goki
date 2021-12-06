@@ -42,7 +42,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./.yarn
-          key: ${{ runner.os }}-${{ hashFiles('./.yarn/**/*.js') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
       - name: Install Yarn dependencies
         run: yarn install
       - run: ./scripts/generate-idl-types.sh
@@ -103,7 +105,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./.yarn
-          key: ${{ runner.os }}-${{ hashFiles('./.yarn/**/*.js') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
