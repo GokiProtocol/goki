@@ -120,7 +120,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./.yarn
-          key: ${{ runner.os }}-${{ hashFiles('./.yarn/**/*.js') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
       - name: Install Yarn dependencies
         run: yarn install
       - name: Parse IDLs
