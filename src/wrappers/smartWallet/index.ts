@@ -149,7 +149,7 @@ export class SmartWalletWrapper {
   }
 
   /**
-   * executeTransaction
+   * Executes a transaction as the Smart Wallet.
    */
   async executeTransaction({
     transactionKey,
@@ -164,6 +164,11 @@ export class SmartWalletWrapper {
     return new TransactionEnvelope(this.provider, [ix]);
   }
 
+  /**
+   * Finds the derived wallet address and bump of a given index.
+   * @param index
+   * @returns
+   */
   async findWalletDerivedAddress(index: number): Promise<[PublicKey, number]> {
     return await findWalletDerivedAddress(this.key, index);
   }
@@ -202,7 +207,7 @@ export class SmartWalletWrapper {
   }
 
   /**
-   * executeTransaction
+   * Executes a transaction using a wallet-derived address.
    */
   async executeTransactionDerived({
     transactionKey,
