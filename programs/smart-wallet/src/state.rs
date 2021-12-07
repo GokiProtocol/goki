@@ -30,6 +30,16 @@ pub struct SmartWallet {
     pub reserved: [u64; 16],
 }
 
+impl SmartWallet {
+    /// Computes the space a [SmartWallet] uses.
+    pub fn space(max_owners: u8) -> usize {
+        4 // Anchor discriminator
+            + std::mem::size_of::<SmartWallet>()
+            + 4 // 4 = the Vec discriminator
+            + std::mem::size_of::<Pubkey>() * (max_owners as usize)
+    }
+}
+
 #[account]
 #[derive(Debug, Default, PartialEq)]
 pub struct Transaction {
@@ -57,6 +67,16 @@ pub struct Transaction {
     pub executor: Pubkey,
     /// When the transaction was executed. -1 if not executed.
     pub executed_at: i64,
+}
+
+impl Transaction {
+    /// Computes the space a [Transaction] uses.
+    pub fn space(instructions: Vec<TXInstruction>) -> usize {
+        4  // Anchor discriminator
+            + std::mem::size_of::<Transaction>()
+            + 4 // Vec discriminator
+            + (instructions.iter().map(|ix| ix.space()).sum::<usize>())
+    }
 }
 
 /// Instruction.
