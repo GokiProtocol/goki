@@ -26,3 +26,23 @@ export const findTransactionAddress = async (
     GOKI_ADDRESSES.SmartWallet
   );
 };
+
+/**
+ * Finds a derived address of a Smart Wallet.
+ * @param smartWallet
+ * @param index
+ * @returns
+ */
+export const findWalletDerivedAddress = async (
+  smartWallet: PublicKey,
+  index: number
+): Promise<[PublicKey, number]> => {
+  return await PublicKey.findProgramAddress(
+    [
+      utils.bytes.utf8.encode("GokiSmartWalletDerived"),
+      smartWallet.toBuffer(),
+      new u64(index).toBuffer(),
+    ],
+    GOKI_ADDRESSES.SmartWallet
+  );
+};

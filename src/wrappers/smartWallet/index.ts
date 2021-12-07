@@ -10,7 +10,7 @@ import type {
   SmartWalletTransactionData,
 } from "../../programs";
 import type { GokiSDK } from "../../sdk";
-import { findTransactionAddress } from "./pda";
+import { findTransactionAddress, findWalletDerivedAddress } from "./pda";
 import type {
   InitSmartWalletWrapperArgs,
   NewTransactionArgs,
@@ -149,7 +149,7 @@ export class SmartWalletWrapper {
   }
 
   /**
-   * executeTransaction
+   * Executes a transaction as the Smart Wallet.
    */
   async executeTransaction({
     transactionKey,
@@ -158,8 +158,32 @@ export class SmartWalletWrapper {
     transactionKey: PublicKey;
     owner?: PublicKey;
   }): Promise<TransactionEnvelope> {
+    const ix = this.program.instruction.executeTransaction(
+      await this.fetchExecuteTransactionContext({ transactionKey, owner })
+    );
+    return new TransactionEnvelope(this.provider, [ix]);
+  }
+
+  /**
+   * Finds the derived wallet address and bump of a given index.
+   * @param index
+   * @returns
+   */
+  async findWalletDerivedAddress(index: number): Promise<[PublicKey, number]> {
+    return await findWalletDerivedAddress(this.key, index);
+  }
+
+  private async fetchExecuteTransactionContext({
+    transactionKey,
+    owner = this.provider.wallet.publicKey,
+    walletDerivedAddress = null,
+  }: {
+    transactionKey: PublicKey;
+    owner?: PublicKey;
+    walletDerivedAddress?: PublicKey | null;
+  }) {
     const data = await this.fetchTransaction(transactionKey);
-    const ix = this.program.instruction.executeTransaction({
+    return {
       accounts: {
         smartWallet: this.key,
         transaction: transactionKey,
@@ -172,7 +196,11 @@ export class SmartWalletWrapper {
           isWritable: false,
         },
         ...ix.keys.map((k) => {
-          if (k.pubkey.equals(this.key) && k.isSigner) {
+          if (
+            k.isSigner &&
+            ((walletDerivedAddress && k.pubkey.equals(walletDerivedAddress)) ||
+              k.pubkey.equals(this.key))
+          ) {
             return {
               ...k,
               isSigner: false,
@@ -181,8 +209,32 @@ export class SmartWalletWrapper {
           return k;
         }),
       ]),
-    });
+    };
+  }
 
+  /**
+   * Executes a transaction using a wallet-derived address.
+   */
+  async executeTransactionDerived({
+    transactionKey,
+    walletIndex,
+    owner = this.provider.wallet.publicKey,
+  }: {
+    transactionKey: PublicKey;
+    walletIndex: number;
+    owner?: PublicKey;
+  }): Promise<TransactionEnvelope> {
+    const [walletDerivedAddress, walletBump] =
+      await this.findWalletDerivedAddress(walletIndex);
+    const ix = this.program.instruction.executeTransactionDerived(
+      new BN(walletIndex),
+      walletBump,
+      await this.fetchExecuteTransactionContext({
+        transactionKey,
+        owner,
+        walletDerivedAddress,
+      })
+    );
     return new TransactionEnvelope(this.provider, [ix]);
   }
 

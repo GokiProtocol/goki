@@ -248,33 +248,32 @@ pub mod smart_wallet {
     #[access_control(ctx.accounts.validate())]
     pub fn execute_transaction(ctx: Context<ExecuteTransaction>) -> ProgramResult {
         let smart_wallet = &ctx.accounts.smart_wallet;
-
-        // Execute the transaction signed by the smart_wallet.
-        let seeds = &[
-            b"GokiSmartWallet".as_ref(),
-            smart_wallet.base.as_ref(),
+        let wallet_seeds: &[&[&[u8]]] = &[&[
+            b"GokiSmartWallet" as &[u8],
+            &smart_wallet.base.to_bytes(),
             &[smart_wallet.bump],
-        ];
-        let signers_seeds = &[&seeds[..]];
-        for ix in ctx.accounts.transaction.instructions.iter() {
-            solana_program::program::invoke_signed(
-                &(ix).into(),
-                ctx.remaining_accounts,
-                signers_seeds,
-            )?;
-        }
+        ]];
+        do_execute_transaction(ctx, wallet_seeds)
+    }
 
-        // Burn the transaction to ensure one time use.
-        ctx.accounts.transaction.executor = ctx.accounts.owner.key();
-        ctx.accounts.transaction.executed_at = Clock::get()?.unix_timestamp;
-
-        emit!(TransactionExecuteEvent {
-            smart_wallet: ctx.accounts.smart_wallet.key(),
-            transaction: ctx.accounts.transaction.key(),
-            executor: ctx.accounts.owner.key(),
-            timestamp: Clock::get()?.unix_timestamp
-        });
-        Ok(())
+    /// Executes the given transaction signed by the given derived address,
+    /// if threshold owners have signed it.
+    /// This allows a Smart Wallet to receive SOL.
+    #[access_control(ctx.accounts.validate())]
+    pub fn execute_transaction_derived(
+        ctx: Context<ExecuteTransaction>,
+        index: u64,
+        bump: u8,
+    ) -> ProgramResult {
+        let smart_wallet = &ctx.accounts.smart_wallet;
+        // Execute the transaction signed by the smart_wallet.
+        let wallet_seeds: &[&[&[u8]]] = &[&[
+            b"GokiSmartWalletDerived" as &[u8],
+            &smart_wallet.key().to_bytes(),
+            &index.to_le_bytes(),
+            &[bump],
+        ]];
+        do_execute_transaction(ctx, wallet_seeds)
     }
 }
 
@@ -357,11 +356,32 @@ pub struct Approve<'info> {
 /// Accounts for [smart_wallet::execute_transaction].
 #[derive(Accounts)]
 pub struct ExecuteTransaction<'info> {
+    /// The [SmartWallet].
     pub smart_wallet: Account<'info, SmartWallet>,
+    /// The [Transaction] to execute.
     #[account(mut)]
     pub transaction: Account<'info, Transaction>,
     /// An owner of the [SmartWallet].
     pub owner: Signer<'info>,
+}
+
+fn do_execute_transaction(ctx: Context<ExecuteTransaction>, seeds: &[&[&[u8]]]) -> ProgramResult {
+    for ix in ctx.accounts.transaction.instructions.iter() {
+        solana_program::program::invoke_signed(&(ix).into(), ctx.remaining_accounts, seeds)?;
+    }
+
+    // Burn the transaction to ensure one time use.
+    let tx = &mut ctx.accounts.transaction;
+    tx.executor = ctx.accounts.owner.key();
+    tx.executed_at = Clock::get()?.unix_timestamp;
+
+    emit!(TransactionExecuteEvent {
+        smart_wallet: ctx.accounts.smart_wallet.key(),
+        transaction: ctx.accounts.transaction.key(),
+        executor: ctx.accounts.owner.key(),
+        timestamp: Clock::get()?.unix_timestamp
+    });
+    Ok(())
 }
 
 #[error]

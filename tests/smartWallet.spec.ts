@@ -3,7 +3,12 @@ import "chai-bn";
 import * as anchor from "@project-serum/anchor";
 import { expectTX } from "@saberhq/chai-solana";
 import { sleep, u64 } from "@saberhq/token-utils";
-import { TransactionInstruction } from "@solana/web3.js";
+import {
+  Keypair,
+  LAMPORTS_PER_SOL,
+  SystemProgram,
+  TransactionInstruction,
+} from "@solana/web3.js";
 import { expect } from "chai";
 import invariant from "tiny-invariant";
 
@@ -12,8 +17,10 @@ import type { SmartWalletWrapper } from "../src/wrappers/smartWallet";
 import {
   findSmartWallet,
   findTransactionAddress,
+  findWalletDerivedAddress,
 } from "../src/wrappers/smartWallet";
 import { makeSDK } from "./workspace";
+import { TransactionEnvelope } from "@saberhq/solana-contrib";
 
 describe("smartWallet", () => {
   const { BN, web3 } = anchor;
@@ -359,6 +366,75 @@ describe("smartWallet", () => {
       expect(smartWalletWrapper.data.ownerSetSeqno).to.equal(1);
       expect(smartWalletWrapper.data.threshold).to.bignumber.equal(threshold);
       expect(smartWalletWrapper.data.owners).to.deep.equal(newOwners);
+    });
+  });
+
+  describe("Execute derived transaction", () => {
+    const { provider } = sdk;
+    const ownerA = web3.Keypair.generate();
+    const ownerB = web3.Keypair.generate();
+
+    const owners = [
+      ownerA.publicKey,
+      ownerB.publicKey,
+      provider.wallet.publicKey,
+    ];
+    let smartWalletWrapper: SmartWalletWrapper;
+
+    before(async () => {
+      const { smartWalletWrapper: wrapperInner, tx } = await sdk.newSmartWallet(
+        {
+          numOwners: owners.length,
+          owners,
+          threshold: new BN(1),
+        }
+      );
+      await expectTX(tx, "create new smartWallet").to.be.fulfilled;
+      smartWalletWrapper = wrapperInner;
+    });
+
+    it("Can transfer lamports from smart wallet", async () => {
+      const { provider, key } = smartWalletWrapper;
+
+      const index = 0;
+      const [derivedWalletKey] = await findWalletDerivedAddress(key, index);
+      // Transfer lamports to smart wallet
+      const tx1 = new TransactionEnvelope(provider, [
+        SystemProgram.transfer({
+          fromPubkey: provider.wallet.publicKey,
+          toPubkey: derivedWalletKey,
+          lamports: LAMPORTS_PER_SOL,
+        }),
+      ]);
+      await expectTX(tx1, "transfer lamports to smart wallet").to.be.fulfilled;
+
+      const receiver = Keypair.generate().publicKey;
+      const ix = SystemProgram.transfer({
+        fromPubkey: derivedWalletKey,
+        toPubkey: receiver,
+        lamports: LAMPORTS_PER_SOL,
+      });
+      const { transactionKey, tx: tx2 } =
+        await smartWalletWrapper.newTransaction({
+          proposer: provider.wallet.publicKey,
+          instructions: [ix],
+        });
+      await expectTX(
+        tx2,
+        "queue transaction to transfer lamports out of smart wallet"
+      ).to.be.fulfilled;
+      expect(await provider.connection.getBalance(derivedWalletKey)).to.eq(
+        LAMPORTS_PER_SOL
+      );
+
+      const tx3 = await smartWalletWrapper.executeTransactionDerived({
+        transactionKey,
+        walletIndex: index,
+      });
+      await expectTX(tx3, "execute transaction derived").to.be.fulfilled;
+      expect(await provider.connection.getBalance(receiver)).to.eq(
+        LAMPORTS_PER_SOL
+      );
     });
   });
 });
