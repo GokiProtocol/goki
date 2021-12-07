@@ -369,7 +369,7 @@ describe("smartWallet", () => {
     });
   });
 
-  describe("Derived transaction", () => {
+  describe("Execute derived transaction", () => {
     const { provider } = sdk;
     const ownerA = web3.Keypair.generate();
     const ownerB = web3.Keypair.generate();

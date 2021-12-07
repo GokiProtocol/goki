@@ -197,16 +197,10 @@ export class SmartWalletWrapper {
         },
         ...ix.keys.map((k) => {
           if (
-            walletDerivedAddress &&
             k.isSigner &&
-            k.pubkey.equals(walletDerivedAddress)
+            ((walletDerivedAddress && k.pubkey.equals(walletDerivedAddress)) ||
+              k.pubkey.equals(this.key))
           ) {
-            return {
-              ...k,
-              isSigner: false,
-            };
-          }
-          if (k.isSigner && k.pubkey.equals(this.key)) {
             return {
               ...k,
               isSigner: false,
