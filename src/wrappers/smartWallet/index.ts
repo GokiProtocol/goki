@@ -176,9 +176,11 @@ export class SmartWalletWrapper {
   private async fetchExecuteTransactionContext({
     transactionKey,
     owner = this.provider.wallet.publicKey,
+    walletDerivedAddress = null,
   }: {
     transactionKey: PublicKey;
     owner?: PublicKey;
+    walletDerivedAddress?: PublicKey | null;
   }) {
     const data = await this.fetchTransaction(transactionKey);
     return {
@@ -194,7 +196,17 @@ export class SmartWalletWrapper {
           isWritable: false,
         },
         ...ix.keys.map((k) => {
-          if (k.pubkey.equals(this.key) && k.isSigner) {
+          if (
+            walletDerivedAddress &&
+            k.isSigner &&
+            k.pubkey.equals(walletDerivedAddress)
+          ) {
+            return {
+              ...k,
+              isSigner: false,
+            };
+          }
+          if (k.isSigner && k.pubkey.equals(this.key)) {
             return {
               ...k,
               isSigner: false,
@@ -218,12 +230,16 @@ export class SmartWalletWrapper {
     walletIndex: number;
     owner?: PublicKey;
   }): Promise<TransactionEnvelope> {
-    const [_walletDerivedAddress, walletBump] =
+    const [walletDerivedAddress, walletBump] =
       await this.findWalletDerivedAddress(walletIndex);
     const ix = this.program.instruction.executeTransactionDerived(
-      walletIndex,
+      new BN(walletIndex),
       walletBump,
-      await this.fetchExecuteTransactionContext({ transactionKey, owner })
+      await this.fetchExecuteTransactionContext({
+        transactionKey,
+        owner,
+        walletDerivedAddress,
+      })
     );
     return new TransactionEnvelope(this.provider, [ix]);
   }
