@@ -2,6 +2,7 @@ import "chai-bn";
 
 import * as anchor from "@project-serum/anchor";
 import { expectTX } from "@saberhq/chai-solana";
+import { TransactionEnvelope } from "@saberhq/solana-contrib";
 import { sleep, u64 } from "@saberhq/token-utils";
 import {
   Keypair,
@@ -20,7 +21,6 @@ import {
   findWalletDerivedAddress,
 } from "../src/wrappers/smartWallet";
 import { makeSDK } from "./workspace";
-import { TransactionEnvelope } from "@saberhq/solana-contrib";
 
 describe("smartWallet", () => {
   const { BN, web3 } = anchor;
