@@ -933,7 +933,7 @@ dependencies = [
 
 [[package]]
 name = "smart-wallet"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "anchor-lang",
  "vipers",
