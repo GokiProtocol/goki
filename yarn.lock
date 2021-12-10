@@ -87,11 +87,11 @@ __metadata:
   dependencies:
     "@project-serum/anchor": ^0.19.0
     "@rushstack/eslint-patch": ^1.1.0
-    "@saberhq/anchor-contrib": ^1.10.6
-    "@saberhq/chai-solana": ^1.10.6
-    "@saberhq/eslint-config": ^1.10.6
-    "@saberhq/solana-contrib": ^1.10.6
-    "@saberhq/token-utils": ^1.10.6
+    "@saberhq/anchor-contrib": ^1.10.8
+    "@saberhq/chai-solana": ^1.10.8
+    "@saberhq/eslint-config": ^1.10.8
+    "@saberhq/solana-contrib": ^1.10.8
+    "@saberhq/token-utils": ^1.10.8
     "@solana/web3.js": ^1.31.0
     "@types/bn.js": ^5.1.0
     "@types/chai": ^4.3.0
@@ -232,25 +232,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@saberhq/anchor-contrib@npm:^1.10.6":
-  version: 1.10.6
-  resolution: "@saberhq/anchor-contrib@npm:1.10.6"
+"@saberhq/anchor-contrib@npm:^1.10.8":
+  version: 1.10.8
+  resolution: "@saberhq/anchor-contrib@npm:1.10.8"
   dependencies:
-    "@saberhq/solana-contrib": ^1.10.6
+    "@saberhq/solana-contrib": ^1.10.8
     eventemitter3: ^4.0.7
     lodash.camelcase: ^4.3.0
     lodash.mapvalues: ^4.6.0
     tslib: ^2.3.1
   peerDependencies:
-    "@project-serum/anchor": ^0.17.0 || ^0.18.0
+    "@project-serum/anchor": ^0.17 || ^0.18 || ^0.19
     "@solana/web3.js": ">=1.29.2"
-  checksum: 94ef50e0b78a7e94a11bb5d2a4171985a26f076df570c105a9dd84551e5c97c498031964e0a39d34a94d53a32918c0f5803215c67d0943394f1c51889850ed9f
+  checksum: cd826b766b098677c7ad13ac61e90034ff274e6504db952700b0a6eb17e468dafde224c476fe70865b89b6d4eb8473c72fbbf658adc856d59189e258f340e091
   languageName: node
   linkType: hard
 
-"@saberhq/chai-solana@npm:^1.10.6":
-  version: 1.10.6
-  resolution: "@saberhq/chai-solana@npm:1.10.6"
+"@saberhq/chai-solana@npm:^1.10.8":
+  version: 1.10.8
+  resolution: "@saberhq/chai-solana@npm:1.10.8"
   dependencies:
     "@types/chai": ^4.3.0
     "@types/chai-as-promised": ^7.1.4
@@ -260,18 +260,18 @@ __metadata:
     chai-bn: ^0.3.0
     tslib: ^2.3.1
   peerDependencies:
-    "@project-serum/anchor": ^0.17.0 || ^0.18.0
+    "@project-serum/anchor": ^0.17 || ^0.18 || ^0.19
     "@saberhq/solana-contrib": ^1.3.17
     "@saberhq/token-utils": ^1.3.17
     "@solana/web3.js": ^1.29.2
     bn.js: ^5.2.0
-  checksum: 59d915ceeb492736413e3d001d15ee72c53cd2a062b64cf9e9dbb2712e8a29746622c5598e1aebf3a2ddab15a7a76054a38ba9916cd5a446e516d245dc52048a
+  checksum: 8f50367e9999a3626fa888919f07e19a93ce6e133e6482f1d8f4205d576a1bfac3d1e2b20cdb0dcac651f2a1110515d06497ff2fbf03513966f1c7ceced7d95e
   languageName: node
   linkType: hard
 
-"@saberhq/eslint-config@npm:^1.10.6":
-  version: 1.10.6
-  resolution: "@saberhq/eslint-config@npm:1.10.6"
+"@saberhq/eslint-config@npm:^1.10.8":
+  version: 1.10.8
+  resolution: "@saberhq/eslint-config@npm:1.10.8"
   dependencies:
     "@typescript-eslint/eslint-plugin": ^5.6.0
     "@typescript-eslint/parser": ^5.6.0
@@ -284,13 +284,13 @@ __metadata:
     prettier: ^2.5.1
   peerDependencies:
     eslint: ">=7"
-  checksum: 0a7987441fedf08fef8043c300ed8d8a0f0d8f5011a81d803a3f246cd4d8a00cb9af13097543cdc97a06be373b5359b265215c761ce656aeee02511a6b2acf0e
+  checksum: 27fbe730800155639844603805d9a17904834c94749f22999da9d642c871346ce6de91a1b3c53e90277531b1ef3bf025b3fcb67f6efcdc9f76f81f9eb224fc66
   languageName: node
   linkType: hard
 
-"@saberhq/solana-contrib@npm:^1.10.6":
-  version: 1.10.6
-  resolution: "@saberhq/solana-contrib@npm:1.10.6"
+"@saberhq/solana-contrib@npm:^1.10.8":
+  version: 1.10.8
+  resolution: "@saberhq/solana-contrib@npm:1.10.8"
   dependencies:
     "@types/promise-retry": ^1.1.3
     "@types/retry": ^0.12.1
@@ -300,15 +300,15 @@ __metadata:
     tslib: ^2.3.1
   peerDependencies:
     "@solana/web3.js": ^1.29.2
-  checksum: 755adad0743561f3c92c26cb8113d53bbbaaba26dc5ba435730344e9ca3154be5880d4cdd59806e1b9966e9e0bc3ab2ce8d73df78a454ac2969160a62e06966d
+  checksum: 35909ba4c1c13daa6684ad5f2c1e60bf37c2bab60d416ee1f6183b4bb24c0c8d655c1bbbd6527fae3a734e193243531a3e6beb2431397dd5ec93a279c6744e7f
   languageName: node
   linkType: hard
 
-"@saberhq/token-utils@npm:^1.10.6":
-  version: 1.10.6
-  resolution: "@saberhq/token-utils@npm:1.10.6"
+"@saberhq/token-utils@npm:^1.10.8":
+  version: 1.10.8
+  resolution: "@saberhq/token-utils@npm:1.10.8"
   dependencies:
-    "@saberhq/solana-contrib": ^1.10.6
+    "@saberhq/solana-contrib": ^1.10.8
     "@solana/buffer-layout": ^3.0.0
     "@solana/spl-token": ^0.1.8
     "@ubeswap/token-math": ^4.3.1
@@ -318,7 +318,7 @@ __metadata:
     "@solana/web3.js": ^1.29.2
     bn.js: ^5.2
     jsbi: ^3 || ^4
-  checksum: 10e1addbdf739d4fd6fb92679e6fe0d86b5160a6c174a93fdfa4593168c089610e29a05eee5fa119a2a41cf129db94f4a74af210bb8452cfb27a597fd1ab51d9
+  checksum: 7f28effab3478e7bc45dc6d0fcd5fc727fa22ede6edb1b325171b28ea0a786b6b16dca7f87d71a1812f36f7fd5f257748ce6ca070857776824f93543b1141e8d
   languageName: node
   linkType: hard
 
