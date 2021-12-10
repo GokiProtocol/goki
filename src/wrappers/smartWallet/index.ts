@@ -159,7 +159,7 @@ export class SmartWalletWrapper {
     owner?: PublicKey;
   }): Promise<TransactionEnvelope> {
     const ix = this.program.instruction.executeTransaction(
-      await this.fetchExecuteTransactionContext({ transactionKey, owner })
+      await this._fetchExecuteTransactionContext({ transactionKey, owner })
     );
     return new TransactionEnvelope(this.provider, [ix]);
   }
@@ -173,7 +173,7 @@ export class SmartWalletWrapper {
     return await findWalletDerivedAddress(this.key, index);
   }
 
-  private async fetchExecuteTransactionContext({
+  private async _fetchExecuteTransactionContext({
     transactionKey,
     owner = this.provider.wallet.publicKey,
     walletDerivedAddress = null,
@@ -229,7 +229,7 @@ export class SmartWalletWrapper {
     const ix = this.program.instruction.executeTransactionDerived(
       new BN(walletIndex),
       walletBump,
-      await this.fetchExecuteTransactionContext({
+      await this._fetchExecuteTransactionContext({
         transactionKey,
         owner,
         walletDerivedAddress,
