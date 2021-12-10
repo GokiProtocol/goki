@@ -5,6 +5,7 @@ with saber-pkgs;
 pkgs.buildEnv {
   name = "ci";
   paths = with pkgs;
+    with saber-pkgs;
     (pkgs.lib.optionals pkgs.stdenv.isLinux ([ libudev ])) ++ [
       anchor-0_18_2
       cargo-workspaces
