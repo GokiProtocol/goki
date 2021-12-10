@@ -1,6 +1,6 @@
 [package]
 name = "token-signer"
-version = "0.3.1"
+version = "0.5.0"
 description = "Sign transactions by owning a token"
 homepage = "https://goki.so"
 repository = "https://github.com/GokiProtocol/goki"
@@ -22,4 +22,4 @@ default = []
 [dependencies]
 anchor-lang = ">=0.17.0"
 anchor-spl = ">=0.17.0"
-vipers = "1.5.3"
+vipers = "1.5.5"
