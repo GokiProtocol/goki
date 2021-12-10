@@ -7,7 +7,7 @@ pkgs.buildEnv {
   paths = with pkgs;
     with saber-pkgs;
     (pkgs.lib.optionals pkgs.stdenv.isLinux ([ libudev ])) ++ [
-      anchor-0_18_2
+      anchor-0_19_0
       cargo-workspaces
 
       # sdk
