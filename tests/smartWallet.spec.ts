@@ -2,7 +2,10 @@ import "chai-bn";
 
 import * as anchor from "@project-serum/anchor";
 import { expectTX } from "@saberhq/chai-solana";
-import { TransactionEnvelope } from "@saberhq/solana-contrib";
+import {
+  PendingTransaction,
+  TransactionEnvelope,
+} from "@saberhq/solana-contrib";
 import { sleep, u64 } from "@saberhq/token-utils";
 import {
   Keypair,
@@ -435,6 +438,54 @@ describe("smartWallet", () => {
       expect(await provider.connection.getBalance(receiver)).to.eq(
         LAMPORTS_PER_SOL
       );
+    });
+  });
+
+  describe("owner invoker", () => {
+    const { provider } = sdk;
+    const ownerA = web3.Keypair.generate();
+    const ownerB = web3.Keypair.generate();
+
+    const owners = [
+      ownerA.publicKey,
+      ownerB.publicKey,
+      provider.wallet.publicKey,
+    ];
+    let smartWalletWrapper: SmartWalletWrapper;
+
+    beforeEach(async () => {
+      const { smartWalletWrapper: wrapperInner, tx } = await sdk.newSmartWallet(
+        {
+          numOwners: owners.length,
+          owners,
+          threshold: new BN(1),
+        }
+      );
+      await expectTX(tx, "create new smartWallet").to.be.fulfilled;
+      smartWalletWrapper = wrapperInner;
+    });
+
+    it("should invoke 1 of N", async () => {
+      const index = 5;
+      const [invokerKey] = await smartWalletWrapper.findOwnerInvokerAddress(
+        index
+      );
+
+      await new PendingTransaction(
+        provider.connection,
+        await provider.connection.requestAirdrop(invokerKey, LAMPORTS_PER_SOL)
+      ).wait();
+
+      const invokeTX = await smartWalletWrapper.ownerInvokeInstruction({
+        index,
+        instruction: SystemProgram.transfer({
+          fromPubkey: invokerKey,
+          toPubkey: provider.wallet.publicKey,
+          lamports: LAMPORTS_PER_SOL,
+        }),
+      });
+      await expectTX(invokeTX, "transfer lamports to smart wallet").to.be
+        .fulfilled;
     });
   });
 });

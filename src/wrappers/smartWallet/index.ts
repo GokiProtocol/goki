@@ -10,7 +10,11 @@ import type {
   SmartWalletTransactionData,
 } from "../../programs";
 import type { GokiSDK } from "../../sdk";
-import { findTransactionAddress, findWalletDerivedAddress } from "./pda";
+import {
+  findOwnerInvokerAddress,
+  findTransactionAddress,
+  findWalletDerivedAddress,
+} from "./pda";
 import type {
   InitSmartWalletWrapperArgs,
   NewTransactionArgs,
@@ -173,6 +177,15 @@ export class SmartWalletWrapper {
     return await findWalletDerivedAddress(this.key, index);
   }
 
+  /**
+   * Finds the owner invoker address and bump of a given index.
+   * @param index
+   * @returns
+   */
+  async findOwnerInvokerAddress(index: number): Promise<[PublicKey, number]> {
+    return await findOwnerInvokerAddress(this.key, index);
+  }
+
   private async _fetchExecuteTransactionContext({
     transactionKey,
     owner = this.provider.wallet.publicKey,
@@ -234,6 +247,51 @@ export class SmartWalletWrapper {
         owner,
         walletDerivedAddress,
       })
+    );
+    return new TransactionEnvelope(this.provider, [ix]);
+  }
+
+  /**
+   * Executes a transaction using an owner invoker address.
+   */
+  async ownerInvokeInstruction({
+    instruction,
+    index,
+    owner = this.provider.wallet.publicKey,
+  }: {
+    instruction: TransactionInstruction;
+    index: number;
+    owner?: PublicKey;
+  }): Promise<TransactionEnvelope> {
+    const [invokerAddress, invokerBump] = await this.findOwnerInvokerAddress(
+      index
+    );
+    const ix = this.program.instruction.ownerInvokeInstruction(
+      new BN(index),
+      invokerBump,
+      instruction,
+      {
+        accounts: {
+          smartWallet: this.key,
+          owner,
+        },
+        remainingAccounts: [
+          {
+            pubkey: instruction.programId,
+            isSigner: false,
+            isWritable: false,
+          },
+          ...instruction.keys.map((k) => {
+            if (k.isSigner && invokerAddress.equals(k.pubkey)) {
+              return {
+                ...k,
+                isSigner: false,
+              };
+            }
+            return k;
+          }),
+        ],
+      }
     );
     return new TransactionEnvelope(this.provider, [ix]);
   }
