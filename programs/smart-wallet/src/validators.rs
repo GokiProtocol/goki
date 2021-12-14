@@ -84,3 +84,10 @@ impl<'info> Validate<'info> for ExecuteTransaction<'info> {
         Ok(())
     }
 }
+
+impl<'info> Validate<'info> for OwnerInvokeInstruction<'info> {
+    fn validate(&self) -> ProgramResult {
+        self.smart_wallet.owner_index(self.owner.key())?;
+        Ok(())
+    }
+}

@@ -275,6 +275,36 @@ pub mod smart_wallet {
         ]];
         do_execute_transaction(ctx, wallet_seeds)
     }
+
+    /// Invokes an arbitrary instruction as a PDA derived from the owner,
+    /// i.e. as an "Owner Invoker".
+    ///
+    /// This is useful for using the multisig as a whitelist or as a council,
+    /// e.g. a whitelist of approved owners.
+    #[access_control(ctx.accounts.validate())]
+    pub fn owner_invoke_instruction(
+        ctx: Context<OwnerInvokeInstruction>,
+        index: u64,
+        bump: u8,
+        ix: TXInstruction,
+    ) -> ProgramResult {
+        let smart_wallet = &ctx.accounts.smart_wallet;
+        // Execute the transaction signed by the smart_wallet.
+        let invoker_seeds: &[&[&[u8]]] = &[&[
+            b"GokiSmartWalletOwnerInvoker" as &[u8],
+            &smart_wallet.key().to_bytes(),
+            &index.to_le_bytes(),
+            &[bump],
+        ]];
+
+        solana_program::program::invoke_signed(
+            &(&ix).into(),
+            ctx.remaining_accounts,
+            invoker_seeds,
+        )?;
+
+        Ok(())
+    }
 }
 
 /// Accounts for [smart_wallet::create_smart_wallet].
@@ -361,6 +391,15 @@ pub struct ExecuteTransaction<'info> {
     /// The [Transaction] to execute.
     #[account(mut)]
     pub transaction: Account<'info, Transaction>,
+    /// An owner of the [SmartWallet].
+    pub owner: Signer<'info>,
+}
+
+/// Accounts for [smart_wallet::owner_invoke_instruction].
+#[derive(Accounts)]
+pub struct OwnerInvokeInstruction<'info> {
+    /// The [SmartWallet].
+    pub smart_wallet: Account<'info, SmartWallet>,
     /// An owner of the [SmartWallet].
     pub owner: Signer<'info>,
 }
