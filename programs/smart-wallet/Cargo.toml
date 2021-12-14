@@ -6,8 +6,8 @@ homepage = "https://goki.so"
 repository = "https://github.com/GokiProtocol/goki"
 authors = ["Goki Rajesh <goki@goki.so>"]
 license = "AGPL-3.0"
-edition = "2018"
-keywords = ["solana", "goki"]
+edition = "2021"
+keywords = ["solana", "goki", "multisig", "anchor"]
 
 [lib]
 crate-type = ["cdylib", "lib"]
