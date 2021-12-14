@@ -46,3 +46,23 @@ export const findWalletDerivedAddress = async (
     GOKI_ADDRESSES.SmartWallet
   );
 };
+
+/**
+ * Finds an Owner Invoker address of a Smart Wallet.
+ * @param smartWallet
+ * @param index
+ * @returns
+ */
+export const findOwnerInvokerAddress = async (
+  smartWallet: PublicKey,
+  index: number
+): Promise<[PublicKey, number]> => {
+  return await PublicKey.findProgramAddress(
+    [
+      utils.bytes.utf8.encode("GokiSmartWalletOwnerInvoker"),
+      smartWallet.toBuffer(),
+      new u64(index).toBuffer(),
+    ],
+    GOKI_ADDRESSES.SmartWallet
+  );
+};
