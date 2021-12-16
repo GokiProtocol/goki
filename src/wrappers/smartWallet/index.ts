@@ -25,12 +25,12 @@ export * from "./pda";
 export * from "./types";
 
 export class SmartWalletWrapper {
-  public readonly bump: number;
-  public readonly key: PublicKey;
-  public readonly program: SmartWalletProgram;
+  readonly bump: number;
+  readonly key: PublicKey;
+  readonly program: SmartWalletProgram;
   private _data?: SmartWalletData;
 
-  constructor(public readonly sdk: GokiSDK, args: InitSmartWalletWrapperArgs) {
+  constructor(readonly sdk: GokiSDK, args: InitSmartWalletWrapperArgs) {
     this.bump = args.bump;
     this.key = args.key;
     this._data = args.data;

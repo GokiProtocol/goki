@@ -19,8 +19,8 @@ import { findSmartWallet, SmartWalletWrapper } from "./wrappers/smartWallet";
  */
 export class GokiSDK {
   constructor(
-    public readonly provider: AugmentedProvider,
-    public readonly programs: Programs
+    readonly provider: AugmentedProvider,
+    readonly programs: Programs
   ) {}
 
   /**
