@@ -20,3 +20,4 @@ src/idls/
 deployments/
 Captain.toml
 .eslintcache
+.goki/
