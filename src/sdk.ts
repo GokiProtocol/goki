@@ -5,6 +5,7 @@ import {
   SolanaAugmentedProvider,
   TransactionEnvelope,
 } from "@saberhq/solana-contrib";
+import { u64 } from "@saberhq/token-utils";
 import type { PublicKey, Signer } from "@solana/web3.js";
 import { Keypair, SystemProgram } from "@solana/web3.js";
 import mapValues from "lodash.mapvalues";
@@ -12,7 +13,13 @@ import mapValues from "lodash.mapvalues";
 import type { Programs } from "./constants";
 import { GOKI_ADDRESSES, GOKI_IDLS } from "./constants";
 import type { PendingSmartWallet } from "./wrappers/smartWallet";
-import { findSmartWallet, SmartWalletWrapper } from "./wrappers/smartWallet";
+import {
+  findOwnerInvokerAddress,
+  findSmartWallet,
+  findSubaccountInfoAddress,
+  findWalletDerivedAddress,
+  SmartWalletWrapper,
+} from "./wrappers/smartWallet";
 
 /**
  * Goki SDK.
@@ -38,6 +45,46 @@ export class GokiSDK {
    */
   loadSmartWallet(key: PublicKey): Promise<SmartWalletWrapper> {
     return SmartWalletWrapper.load(this, key);
+  }
+
+  /**
+   * Creates a subaccount info.
+   * @returns
+   */
+  async createSubaccountInfo({
+    smartWallet,
+    index,
+    type,
+    payer = this.provider.wallet.publicKey,
+  }: {
+    smartWallet: PublicKey;
+    index: number;
+    type: "derived" | "ownerInvoker";
+    payer?: PublicKey;
+  }) {
+    const [subaccount] =
+      type === "derived"
+        ? await findWalletDerivedAddress(smartWallet, index)
+        : await findOwnerInvokerAddress(smartWallet, index);
+    const [subaccountInfo, bump] = await findSubaccountInfoAddress(subaccount);
+    return this.provider.newTX([
+      this.programs.SmartWallet.instruction.createSubaccountInfo(
+        bump,
+        subaccount,
+        smartWallet,
+        new u64(index),
+        {
+          [type]: {},
+        },
+        {
+          accounts: {
+            subaccountInfo,
+            payer,
+            systemProgram: SystemProgram.programId,
+          },
+        }
+      ),
+    ]);
   }
 
   /**

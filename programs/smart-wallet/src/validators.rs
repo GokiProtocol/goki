@@ -91,3 +91,10 @@ impl<'info> Validate<'info> for OwnerInvokeInstruction<'info> {
         Ok(())
     }
 }
+
+impl<'info> Validate<'info> for CreateSubaccountInfo<'info> {
+    fn validate(&self) -> ProgramResult {
+        // no validation necessary
+        Ok(())
+    }
+}

@@ -135,3 +135,28 @@ impl From<TXAccountMeta> for solana_program::instruction::AccountMeta {
         }
     }
 }
+
+/// Type of Subaccount.
+#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, Eq, PartialEq)]
+#[repr(u8)]
+pub enum SubaccountType {
+    Derived = 0,
+    OwnerInvoker = 1,
+}
+
+impl Default for SubaccountType {
+    fn default() -> Self {
+        SubaccountType::Derived
+    }
+}
+
+#[account]
+#[derive(Default, Debug, PartialEq)]
+pub struct SubaccountInfo {
+    /// Smart wallet of the sub-account.
+    pub smart_wallet: Pubkey,
+    /// Type of sub-account.
+    pub subaccount_type: SubaccountType,
+    /// Index of the sub-account.
+    pub index: u64,
+}

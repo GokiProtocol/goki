@@ -10,6 +10,7 @@ export type SmartWalletTypes = AnchorTypes<
   {
     smartWallet: SmartWalletData;
     transaction: SmartWalletTransactionData;
+    subaccountInfo: SubaccountInfoData;
   },
   {
     TXInstruction: SmartWalletInstruction;
@@ -20,6 +21,7 @@ export type SmartWalletTypes = AnchorTypes<
 type Accounts = SmartWalletTypes["Accounts"];
 export type SmartWalletData = Accounts["SmartWallet"];
 export type SmartWalletTransactionData = Accounts["Transaction"];
+export type SubaccountInfoData = Accounts["SubaccountInfo"];
 
 export type SmartWalletInstruction = Omit<
   AnchorDefined<SmartWalletIDL>["TXInstruction"],

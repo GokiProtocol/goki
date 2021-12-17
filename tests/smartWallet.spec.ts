@@ -20,6 +20,7 @@ import { SmartWalletErrors } from "../src/idls/smart_wallet";
 import type { SmartWalletWrapper } from "../src/wrappers/smartWallet";
 import {
   findSmartWallet,
+  findSubaccountInfoAddress,
   findTransactionAddress,
   findWalletDerivedAddress,
 } from "../src/wrappers/smartWallet";
@@ -486,6 +487,38 @@ describe("smartWallet", () => {
       });
       await expectTX(invokeTX, "transfer lamports to smart wallet").to.be
         .fulfilled;
+
+      await expectTX(
+        await sdk.createSubaccountInfo({
+          smartWallet: invokerKey,
+          index,
+          type: "ownerInvoker",
+        }),
+        "create wrong subaccount info"
+      ).to.be.fulfilled;
+
+      const [infoKey] = await findSubaccountInfoAddress(invokerKey);
+      const info =
+        await sdk.programs.SmartWallet.account.subaccountInfo.fetchNullable(
+          infoKey
+        );
+      expect(info).to.be.null;
+
+      await expectTX(
+        await sdk.createSubaccountInfo({
+          smartWallet: smartWalletWrapper.key,
+          index,
+          type: "ownerInvoker",
+        }),
+        "create subaccount info"
+      ).to.be.fulfilled;
+
+      const info2 = await sdk.programs.SmartWallet.account.subaccountInfo.fetch(
+        infoKey
+      );
+      expect(info2.index).to.bignumber.eq(index.toString());
+      expect(info2.smartWallet).to.eqAddress(smartWalletWrapper.key);
+      expect(info2.subaccountType).to.deep.eq({ ownerInvoker: {} });
     });
   });
 });
