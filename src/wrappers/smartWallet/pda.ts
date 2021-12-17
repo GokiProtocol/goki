@@ -66,3 +66,18 @@ export const findOwnerInvokerAddress = async (
     GOKI_ADDRESSES.SmartWallet
   );
 };
+
+/**
+ * Finds the subaccount info address of a subaccount of a smart wallet.
+ * @param smartWallet
+ * @param index
+ * @returns
+ */
+export const findSubaccountInfoAddress = async (
+  subaccount: PublicKey
+): Promise<[PublicKey, number]> => {
+  return await PublicKey.findProgramAddress(
+    [utils.bytes.utf8.encode("GokiSubaccountInfo"), subaccount.toBuffer()],
+    GOKI_ADDRESSES.SmartWallet
+  );
+};

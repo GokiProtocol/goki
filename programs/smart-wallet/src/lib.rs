@@ -305,6 +305,46 @@ pub mod smart_wallet {
 
         Ok(())
     }
+
+    /// Creates a struct containing a reverse mapping of a subaccount to a
+    /// [SmartWallet].
+    #[access_control(ctx.accounts.validate())]
+    pub fn create_subaccount_info(
+        ctx: Context<CreateSubaccountInfo>,
+        _bump: u8,
+        subaccount: Pubkey,
+        smart_wallet: Pubkey,
+        index: u64,
+        subaccount_type: SubaccountType,
+    ) -> ProgramResult {
+        let (address, _derived_bump) = match subaccount_type {
+            SubaccountType::Derived => Pubkey::find_program_address(
+                &[
+                    b"GokiSmartWalletDerived" as &[u8],
+                    &smart_wallet.key().to_bytes(),
+                    &index.to_le_bytes(),
+                ],
+                &crate::ID,
+            ),
+            SubaccountType::OwnerInvoker => Pubkey::find_program_address(
+                &[
+                    b"GokiSmartWalletOwnerInvoker" as &[u8],
+                    &smart_wallet.key().to_bytes(),
+                    &index.to_le_bytes(),
+                ],
+                &crate::ID,
+            ),
+        };
+
+        invariant!(address == subaccount, SubaccountOwnerMismatch);
+
+        let info = &mut ctx.accounts.subaccount_info;
+        info.smart_wallet = smart_wallet;
+        info.subaccount_type = subaccount_type;
+        info.index = index;
+
+        Ok(())
+    }
 }
 
 /// Accounts for [smart_wallet::create_smart_wallet].
@@ -404,6 +444,28 @@ pub struct OwnerInvokeInstruction<'info> {
     pub owner: Signer<'info>,
 }
 
+/// Accounts for [smart_wallet::create_subaccount_info].
+#[derive(Accounts)]
+#[instruction(bump: u8, subaccount: Pubkey)]
+pub struct CreateSubaccountInfo<'info> {
+    /// The [SubaccountInfo] to create.
+    #[account(
+        init,
+        seeds = [
+            b"GokiSubaccountInfo".as_ref(),
+            &subaccount.to_bytes()
+        ],
+        bump = bump,
+        payer = payer
+    )]
+    pub subaccount_info: Account<'info, SubaccountInfo>,
+    /// Payer to create the [SubaccountInfo].
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    /// The [System] program.
+    pub system_program: Program<'info, System>,
+}
+
 fn do_execute_transaction(ctx: Context<ExecuteTransaction>, seeds: &[&[&[u8]]]) -> ProgramResult {
     for ix in ctx.accounts.transaction.instructions.iter() {
         solana_program::program::invoke_signed(&(ix).into(), ctx.remaining_accounts, seeds)?;
@@ -443,4 +505,6 @@ pub enum ErrorCode {
     InvalidThreshold,
     #[msg("Owner set has changed since the creation of the transaction.")]
     OwnerSetChanged,
+    #[msg("Subaccount does not belong to smart wallet.")]
+    SubaccountOwnerMismatch,
 }
