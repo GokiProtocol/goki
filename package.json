@@ -35,7 +35,6 @@
     "@solana/web3.js": "^1.32.0",
     "@types/bn.js": "^5.1.0",
     "@types/chai": "^4.3.0",
-    "@types/chai-as-promised": "^7.1.4",
     "@types/lodash.mapvalues": "^4.6.6",
     "@types/mocha": "^9.1.0",
     "@types/node": "^16.11.21",
