@@ -23,12 +23,7 @@
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
-use anchor_lang::Key;
-use std::convert::Into;
-use vipers::invariant;
-use vipers::unwrap_int;
-use vipers::unwrap_or_err;
-use vipers::validate::Validate;
+use vipers::{invariant, unwrap_int, unwrap_or_err, validate::Validate};
 
 mod events;
 mod smart_wallet_utils;
@@ -69,7 +64,7 @@ pub mod smart_wallet {
         minimum_delay: i64,
     ) -> ProgramResult {
         invariant!(minimum_delay >= 0, "delay must be positive");
-        require!(minimum_delay < MAX_DELAY_SECONDS, DelayTooHigh);
+        invariant!(minimum_delay < MAX_DELAY_SECONDS, DelayTooHigh);
 
         invariant!((max_owners as usize) >= owners.len(), "max_owners");
 
@@ -121,7 +116,7 @@ pub mod smart_wallet {
     /// change_threshold.
     #[access_control(ctx.accounts.validate())]
     pub fn change_threshold(ctx: Context<Auth>, threshold: u64) -> ProgramResult {
-        require!(
+        invariant!(
             threshold <= ctx.accounts.smart_wallet.owners.len() as u64,
             InvalidThreshold
         );
@@ -160,7 +155,7 @@ pub mod smart_wallet {
         let clock = Clock::get()?;
         let current_ts = clock.unix_timestamp;
         if smart_wallet.minimum_delay != 0 {
-            require!(
+            invariant!(
                 eta >= unwrap_int!(current_ts.checked_add(smart_wallet.minimum_delay as i64)),
                 InvalidETA
             );
@@ -169,7 +164,7 @@ pub mod smart_wallet {
             invariant!(eta >= 0, "ETA must be positive");
             let delay = unwrap_int!(eta.checked_sub(current_ts));
             invariant!(delay >= 0, "ETA must be in the future");
-            require!(delay <= MAX_DELAY_SECONDS, DelayTooHigh);
+            invariant!(delay <= MAX_DELAY_SECONDS, DelayTooHigh);
         }
 
         // generate the signers boolean list

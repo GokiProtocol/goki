@@ -1,6 +1,6 @@
 use crate::InvokeSignedInstruction;
 use anchor_lang::prelude::*;
-use vipers::{assert_keys_eq, validate::Validate};
+use vipers::{assert_keys_eq, invariant, validate::Validate};
 
 impl<'info> Validate<'info> for InvokeSignedInstruction<'info> {
     fn validate(&self) -> ProgramResult {
@@ -12,7 +12,7 @@ impl<'info> Validate<'info> for InvokeSignedInstruction<'info> {
         );
 
         // Check NFT ownership.
-        require!(self.nft_account.amount == 1, Unauthorized);
+        invariant!(self.nft_account.amount == 1, Unauthorized);
 
         Ok(())
     }
