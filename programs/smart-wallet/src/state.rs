@@ -1,4 +1,5 @@
 //! State structs.
+#![deny(missing_docs)]
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
@@ -13,14 +14,19 @@ pub struct SmartWallet {
     /// Bump seed for deriving PDA seeds.
     pub bump: u8,
 
-    /// Minimum number of owner approvals needed to sign a transaction.
+    /// Minimum number of owner approvals needed to sign a [Transaction].
     pub threshold: u64,
-    /// Minimum delay between approval and execution.
+    /// Minimum delay between approval and execution, in seconds.
     pub minimum_delay: i64,
-    /// Time after the ETA until a transaction expires.
+    /// Time after the ETA until a [Transaction] expires.
     pub grace_period: i64,
 
     /// Sequence of the ownership set.
+    ///
+    /// This may be used to see if the owners on the multisig have changed
+    /// since the last time the owners were checked. This is used on
+    /// [Transaction] approval to ensure that owners cannot approve old
+    /// transactions.
     pub owner_set_seqno: u32,
     /// Total number of [Transaction]s on this [SmartWallet].
     pub num_transactions: u64,
