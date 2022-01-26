@@ -560,8 +560,10 @@ pub struct OwnerInvokeStagedInstruction<'info> {
     /// The [SmartWallet].
     pub smart_wallet: Account<'info, SmartWallet>,
     /// An owner of the [SmartWallet].
+    #[account(mut)]
     pub owner: Signer<'info>,
     /// The staged TX instruction.
+    #[account(mut, close = owner)]
     pub staged_tx_instruction: Account<'info, StagedTXInstruction>,
 }
 
