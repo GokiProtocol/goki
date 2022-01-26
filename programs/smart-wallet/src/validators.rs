@@ -98,3 +98,27 @@ impl<'info> Validate<'info> for CreateSubaccountInfo<'info> {
         Ok(())
     }
 }
+
+impl<'info> Validate<'info> for CreateStagedTXInstruction<'info> {
+    fn validate(&self) -> ProgramResult {
+        // validate the owner
+        self.smart_wallet.owner_index(self.owner.key())?;
+        Ok(())
+    }
+}
+
+impl<'info> Validate<'info> for OwnerInvokeStagedInstruction<'info> {
+    fn validate(&self) -> ProgramResult {
+        // ensure that the owner set is still fresh.
+        invariant!(
+            self.smart_wallet.owner_set_seqno == self.staged_tx_instruction.owner_set_seqno,
+            OwnerSetChanged
+        );
+
+        // check to see that this account is authorized to execute
+        // this transaction.
+        assert_keys_eq!(self.smart_wallet, self.staged_tx_instruction.smart_wallet);
+        assert_keys_eq!(self.owner, self.staged_tx_instruction.owner);
+        Ok(())
+    }
+}

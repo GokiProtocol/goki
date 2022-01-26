@@ -306,6 +306,53 @@ pub mod smart_wallet {
         Ok(())
     }
 
+    /// Invokes an arbitrary instruction as a PDA derived from the owner,
+    /// i.e. as an "Owner Invoker".
+    ///
+    /// This is useful for using the multisig as a whitelist or as a council,
+    /// e.g. a whitelist of approved owners.
+    ///
+    /// # Arguments
+    /// - `index` - The index of the owner-invoker.
+    /// - `bump` - Bump seed of the owner-invoker.
+    /// - `invoker` - The owner-invoker.
+    /// - `data` - The raw bytes of the instruction data.
+    #[access_control(ctx.accounts.validate())]
+    pub fn owner_invoke_instruction_v2(
+        ctx: Context<OwnerInvokeInstruction>,
+        index: u64,
+        bump: u8,
+        invoker: Pubkey,
+        data: Vec<u8>,
+    ) -> ProgramResult {
+        let smart_wallet = &ctx.accounts.smart_wallet;
+        // Execute the transaction signed by the smart_wallet.
+        let invoker_seeds: &[&[&[u8]]] = &[&[
+            b"GokiSmartWalletOwnerInvoker" as &[u8],
+            &smart_wallet.key().to_bytes(),
+            &index.to_le_bytes(),
+            &[bump],
+        ]];
+
+        let program_id = ctx.remaining_accounts[0].key();
+        let accounts: Vec<AccountMeta> = ctx.remaining_accounts[1..]
+            .iter()
+            .map(|v| AccountMeta {
+                pubkey: *v.key,
+                is_signer: if v.key == &invoker { true } else { v.is_signer },
+                is_writable: v.is_writable,
+            })
+            .collect();
+        let ix = &solana_program::instruction::Instruction {
+            program_id,
+            accounts,
+            data,
+        };
+
+        solana_program::program::invoke_signed(ix, ctx.remaining_accounts, invoker_seeds)?;
+        Ok(())
+    }
+
     /// Creates a struct containing a reverse mapping of a subaccount to a
     /// [SmartWallet].
     #[access_control(ctx.accounts.validate())]
@@ -342,6 +389,59 @@ pub mod smart_wallet {
         info.smart_wallet = smart_wallet;
         info.subaccount_type = subaccount_type;
         info.index = index;
+
+        Ok(())
+    }
+
+    /// Creates a [StagedTXInstruction].
+    ///
+    /// A [StagedTXInstruction] may be used to minimize the instruction data when executing
+    /// an owner-invoked instruction.
+    #[access_control(ctx.accounts.validate())]
+    pub fn create_staged_tx_instruction(
+        ctx: Context<CreateStagedTXInstruction>,
+        _bump: u8,
+        index: u64,
+        owner_invoker_bump: u8,
+        ix: TXInstruction,
+    ) -> ProgramResult {
+        let staged = &mut ctx.accounts.staged_tx_instruction;
+
+        staged.smart_wallet = ctx.accounts.smart_wallet.key();
+        staged.index = index;
+        staged.owner_invoker_bump = owner_invoker_bump;
+
+        staged.owner = ctx.accounts.owner.key();
+        staged.owner_set_seqno = ctx.accounts.smart_wallet.owner_set_seqno;
+
+        staged.ix = ix;
+        Ok(())
+    }
+
+    /// Invokes an owner-invoker instruction as defined
+    /// in a PDA created in [create_staged_tx_instruction].
+    ///
+    /// This is useful for when the instruction is too large to fit in a single
+    /// transaction.
+    #[access_control(ctx.accounts.validate())]
+    pub fn owner_invoke_staged_instruction(
+        ctx: Context<OwnerInvokeStagedInstruction>,
+    ) -> ProgramResult {
+        let staged_tx_instruction = &ctx.accounts.staged_tx_instruction;
+
+        // Execute the transaction signed by the smart_wallet.
+        let invoker_seeds: &[&[&[u8]]] = &[&[
+            b"GokiSmartWalletOwnerInvoker" as &[u8],
+            &staged_tx_instruction.smart_wallet.to_bytes(),
+            &staged_tx_instruction.index.to_le_bytes(),
+            &[staged_tx_instruction.owner_invoker_bump],
+        ]];
+
+        solana_program::program::invoke_signed(
+            &(&ctx.accounts.staged_tx_instruction.ix).into(),
+            ctx.remaining_accounts,
+            invoker_seeds,
+        )?;
 
         Ok(())
     }
@@ -444,6 +544,15 @@ pub struct OwnerInvokeInstruction<'info> {
     pub owner: Signer<'info>,
 }
 
+/// Accounts for [smart_wallet::owner_invoke_instruction].
+#[derive(Accounts)]
+pub struct OwnerInvokeInstructionV2<'info> {
+    /// The [SmartWallet].
+    pub smart_wallet: Account<'info, SmartWallet>,
+    /// An owner of the [SmartWallet].
+    pub owner: Signer<'info>,
+}
+
 /// Accounts for [smart_wallet::create_subaccount_info].
 #[derive(Accounts)]
 #[instruction(bump: u8, subaccount: Pubkey)]
@@ -464,6 +573,54 @@ pub struct CreateSubaccountInfo<'info> {
     pub payer: Signer<'info>,
     /// The [System] program.
     pub system_program: Program<'info, System>,
+}
+
+/// Accounts for [smart_wallet::create_staged_tx_instruction].
+#[derive(Accounts)]
+#[instruction(bump: u8)]
+pub struct CreateStagedTXInstruction<'info> {
+    /// The [SmartWallet].
+    pub smart_wallet: Account<'info, SmartWallet>,
+
+    /// The [SmartWallet] owner which will execute the instruction
+    /// and may receive the rent refund.
+    pub owner: Signer<'info>,
+
+    /// Random keypair used to create the [StagedTXInstruction].
+    pub base: Signer<'info>,
+
+    /// The [SubaccountInfo] to create.
+    #[account(
+        init,
+        seeds = [
+            b"GokiStagedTXInstruction".as_ref(),
+            smart_wallet.key().to_bytes().as_ref(),
+            owner.key().to_bytes().as_ref(),
+            base.key().to_bytes().as_ref()
+        ],
+        bump = bump,
+        payer = payer
+    )]
+    pub staged_tx_instruction: Account<'info, StagedTXInstruction>,
+
+    /// Payer to create the [StagedTXInstruction].
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    /// The [System] program.
+    pub system_program: Program<'info, System>,
+}
+
+/// Accounts for [smart_wallet::owner_invoke_staged_instruction].
+#[derive(Accounts)]
+pub struct OwnerInvokeStagedInstruction<'info> {
+    /// The [SmartWallet].
+    pub smart_wallet: Account<'info, SmartWallet>,
+    /// An owner of the [SmartWallet].
+    #[account(mut)]
+    pub owner: Signer<'info>,
+    /// The staged TX instruction.
+    #[account(mut, close = owner)]
+    pub staged_tx_instruction: Account<'info, StagedTXInstruction>,
 }
 
 fn do_execute_transaction(ctx: Context<ExecuteTransaction>, seeds: &[&[&[u8]]]) -> ProgramResult {
