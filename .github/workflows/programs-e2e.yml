@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  SOLANA_VERSION: "1.8.9"
+  SOLANA_VERSION: "1.8.11"
   RUST_TOOLCHAIN: nightly-2021-12-09
 
 jobs:
@@ -19,11 +19,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - uses: cachix/install-nix-action@v16
-        with:
-          install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
-          install_options: "--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve"
-          extra_nix_config: |
-            experimental-features = nix-command flakes
       - name: Setup Cachix
         uses: cachix/cachix-action@v10
         with:
@@ -57,6 +52,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # Setup Nix
+      - uses: cachix/install-nix-action@v16
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v10
+        with:
+          name: goki
+          extraPullNames: quarry, saber
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
       # Install Rust and Anchor
       - name: Install Rust nightly
         uses: actions-rs/toolchain@v1
@@ -72,13 +76,19 @@ jobs:
 
       # Install Solana
       - name: Cache Solana binaries
+        id: solana-cache
         uses: actions/cache@v2
         with:
-          path: ~/.cache/solana
+          path: |
+            ~/.cache/solana
+            ~/.local/share/solana/install
           key: ${{ runner.os }}-${{ env.SOLANA_VERSION }}
       - name: Install Solana
+        if: steps.solana-cache.outputs.cache-hit != 'true'
         run: |
-          sh -c "$(curl -sSfL https://release.solana.com/v${{ env.SOLANA_VERSION }}/install)"
+          nix shell .#ci --command solana-install init ${{ env.SOLANA_VERSION }}
+      - name: Setup Solana Path
+        run: |
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
           export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
           solana --version
@@ -86,18 +96,6 @@ jobs:
           solana-keygen new -o "$HOME/.config/solana/id.json" --no-passphrase --silent
 
       # Run build
-      - uses: cachix/install-nix-action@v16
-        with:
-          install_url: https://nixos-nix-install-tests.cachix.org/serve/i6laym9jw3wg9mw6ncyrk6gjx4l34vvx/install
-          install_options: "--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve"
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v10
-        with:
-          name: goki
-          extraPullNames: quarry, saber
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build program
         run: nix shell .#ci --command anchor build
 

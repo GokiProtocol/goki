@@ -37,7 +37,8 @@ jobs:
         run: cargo fmt -- --check
       - name: Run clippy
         run: cargo clippy --all-targets -- --deny=warnings
-      - run: cargo doc --lib
+      - name: Check if publish works
+        run: cargo publish --no-verify --dry-run
 
   unit-tests:
     runs-on: ubuntu-latest
@@ -53,3 +54,18 @@ jobs:
       - uses: Swatinem/rust-cache@v1
       - name: Run unit tests
         run: cargo test --lib
+
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Rust nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          override: true
+          profile: minimal
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v1
+      - name: Generate docs
+        run: cargo doc
