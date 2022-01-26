@@ -306,6 +306,53 @@ pub mod smart_wallet {
         Ok(())
     }
 
+    /// Invokes an arbitrary instruction as a PDA derived from the owner,
+    /// i.e. as an "Owner Invoker".
+    ///
+    /// This is useful for using the multisig as a whitelist or as a council,
+    /// e.g. a whitelist of approved owners.
+    ///
+    /// # Arguments
+    /// - `index` - The index of the owner-invoker.
+    /// - `bump` - Bump seed of the owner-invoker.
+    /// - `invoker` - The owner-invoker.
+    /// - `data` - The raw bytes of the instruction data.
+    #[access_control(ctx.accounts.validate())]
+    pub fn owner_invoke_instruction_v2(
+        ctx: Context<OwnerInvokeInstruction>,
+        index: u64,
+        bump: u8,
+        invoker: Pubkey,
+        data: Vec<u8>,
+    ) -> ProgramResult {
+        let smart_wallet = &ctx.accounts.smart_wallet;
+        // Execute the transaction signed by the smart_wallet.
+        let invoker_seeds: &[&[&[u8]]] = &[&[
+            b"GokiSmartWalletOwnerInvoker" as &[u8],
+            &smart_wallet.key().to_bytes(),
+            &index.to_le_bytes(),
+            &[bump],
+        ]];
+
+        let program_id = ctx.remaining_accounts[0].key();
+        let accounts: Vec<AccountMeta> = ctx.remaining_accounts[1..]
+            .iter()
+            .map(|v| AccountMeta {
+                pubkey: *v.key,
+                is_signer: if v.key == &invoker { true } else { v.is_signer },
+                is_writable: v.is_writable,
+            })
+            .collect();
+        let ix = &solana_program::instruction::Instruction {
+            program_id,
+            accounts,
+            data,
+        };
+
+        solana_program::program::invoke_signed(ix, ctx.remaining_accounts, invoker_seeds)?;
+        Ok(())
+    }
+
     /// Creates a struct containing a reverse mapping of a subaccount to a
     /// [SmartWallet].
     #[access_control(ctx.accounts.validate())]
@@ -491,6 +538,15 @@ pub struct ExecuteTransaction<'info> {
 /// Accounts for [smart_wallet::owner_invoke_instruction].
 #[derive(Accounts)]
 pub struct OwnerInvokeInstruction<'info> {
+    /// The [SmartWallet].
+    pub smart_wallet: Account<'info, SmartWallet>,
+    /// An owner of the [SmartWallet].
+    pub owner: Signer<'info>,
+}
+
+/// Accounts for [smart_wallet::owner_invoke_instruction].
+#[derive(Accounts)]
+pub struct OwnerInvokeInstructionV2<'info> {
     /// The [SmartWallet].
     pub smart_wallet: Account<'info, SmartWallet>,
     /// An owner of the [SmartWallet].
