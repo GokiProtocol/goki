@@ -575,5 +575,95 @@ describe("smartWallet", () => {
       expect(info2.smartWallet).to.eqAddress(smartWalletWrapper.key);
       expect(info2.subaccountType).to.deep.eq({ ownerInvoker: {} });
     });
+
+    it("invoke large TX (v2)", async () => {
+      const index = 5;
+      const [invokerKey, invokerBump] =
+        await smartWalletWrapper.findOwnerInvokerAddress(index);
+
+      await new PendingTransaction(
+        provider.connection,
+        await provider.connection.requestAirdrop(invokerKey, LAMPORTS_PER_SOL)
+      ).wait();
+
+      const instructionToExecute = SystemProgram.transfer({
+        fromPubkey: invokerKey,
+        toPubkey: provider.wallet.publicKey,
+        lamports: LAMPORTS_PER_SOL,
+      });
+
+      const ix = sdk.programs.SmartWallet.instruction.ownerInvokeInstructionV2(
+        new BN(index),
+        invokerBump,
+        invokerKey,
+        instructionToExecute.data,
+        {
+          accounts: {
+            smartWallet: smartWalletWrapper.key,
+            owner: ownerA.publicKey,
+          },
+          remainingAccounts: [
+            {
+              pubkey: instructionToExecute.programId,
+              isSigner: false,
+              isWritable: false,
+            },
+            ...instructionToExecute.keys.map((k) => {
+              if (k.isSigner && invokerKey.equals(k.pubkey)) {
+                return {
+                  ...k,
+                  isSigner: false,
+                };
+              }
+              return k;
+            }),
+            /// Add 24 dummy keys
+            ...new Array(24).fill(null).map(() => ({
+              pubkey: Keypair.generate().publicKey,
+              isSigner: false,
+              isWritable: false,
+            })),
+          ],
+        }
+      );
+      const tx = new TransactionEnvelope(
+        smartWalletWrapper.provider,
+        [ix],
+        [ownerA]
+      );
+      await expectTX(tx, "transfer lamports to smart wallet").to.be.fulfilled;
+
+      await expectTX(
+        await sdk.createSubaccountInfo({
+          smartWallet: invokerKey,
+          index,
+          type: "ownerInvoker",
+        }),
+        "create wrong subaccount info"
+      ).to.be.fulfilled;
+
+      const [infoKey] = await findSubaccountInfoAddress(invokerKey);
+      const info =
+        await sdk.programs.SmartWallet.account.subaccountInfo.fetchNullable(
+          infoKey
+        );
+      expect(info).to.be.null;
+
+      await expectTX(
+        await sdk.createSubaccountInfo({
+          smartWallet: smartWalletWrapper.key,
+          index,
+          type: "ownerInvoker",
+        }),
+        "create subaccount info"
+      ).to.be.fulfilled;
+
+      const info2 = await sdk.programs.SmartWallet.account.subaccountInfo.fetch(
+        infoKey
+      );
+      expect(info2.index).to.bignumber.eq(index.toString());
+      expect(info2.smartWallet).to.eqAddress(smartWalletWrapper.key);
+      expect(info2.subaccountType).to.deep.eq({ ownerInvoker: {} });
+    });
   });
 });
