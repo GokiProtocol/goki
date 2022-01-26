@@ -20,15 +20,14 @@
 //! signed.
 #![deny(rustdoc::all)]
 #![allow(rustdoc::missing_doc_code_examples)]
+#![deny(clippy::unwrap_used)]
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
-use vipers::{invariant, unwrap_int, unwrap_or_err, validate::Validate};
+use vipers::{invariant, unwrap_int, validate::Validate};
 
 mod events;
-mod smart_wallet_utils;
 mod state;
-mod transaction;
 mod validators;
 
 pub use events::*;
@@ -420,6 +419,7 @@ pub struct CreateSmartWallet<'info> {
 /// Accounts for [smart_wallet::set_owners] and [smart_wallet::change_threshold].
 #[derive(Accounts)]
 pub struct Auth<'info> {
+    /// The [SmartWallet].
     #[account(mut, signer)]
     pub smart_wallet: Account<'info, SmartWallet>,
 }
@@ -536,6 +536,7 @@ fn do_execute_transaction(ctx: Context<ExecuteTransaction>, seeds: &[&[&[u8]]]) 
     Ok(())
 }
 
+/// Program errors.
 #[error]
 pub enum ErrorCode {
     #[msg("The given owner is not part of this smart wallet.")]

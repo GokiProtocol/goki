@@ -2,7 +2,9 @@
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
+use vipers::unwrap_or_err;
 
+/// A [SmartWallet] is a multisig wallet with Timelock capabilities.
 #[account]
 #[derive(Default, Debug, PartialEq)]
 pub struct SmartWallet {
@@ -38,8 +40,18 @@ impl SmartWallet {
             + 4 // 4 = the Vec discriminator
             + std::mem::size_of::<Pubkey>() * (max_owners as usize)
     }
+
+    /// Gets the index of the key in the owners Vec, or error
+    pub fn owner_index(&self, key: Pubkey) -> crate::Result<usize> {
+        Ok(unwrap_or_err!(
+            self.owners.iter().position(|a| *a == key),
+            InvalidOwner
+        ))
+    }
 }
 
+/// A [Transaction] is a series of instructions that may be executed
+/// by a [SmartWallet].
 #[account]
 #[derive(Debug, Default, PartialEq)]
 pub struct Transaction {
@@ -60,7 +72,10 @@ pub struct Transaction {
     pub signers: Vec<bool>,
     /// Owner set sequence number.
     pub owner_set_seqno: u32,
-    /// Estimated time transaction will be executed
+    /// Estimated time the [Transaction] will be executed.
+    ///
+    /// - If set to [crate::NO_ETA], the transaction may be executed at any time.
+    /// - Otherwise, the [Transaction] may be executed at any point after the ETA has elapsed.
     pub eta: i64,
 
     /// The account that executed the [Transaction].
@@ -76,6 +91,11 @@ impl Transaction {
             + std::mem::size_of::<Transaction>()
             + 4 // Vec discriminator
             + (instructions.iter().map(|ix| ix.space()).sum::<usize>())
+    }
+
+    /// Number of signers.
+    pub fn num_signers(&self) -> usize {
+        self.signers.iter().filter(|&did_sign| *did_sign).count()
     }
 }
 
@@ -137,10 +157,14 @@ impl From<TXAccountMeta> for solana_program::instruction::AccountMeta {
 }
 
 /// Type of Subaccount.
-#[derive(AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(
+    AnchorSerialize, AnchorDeserialize, Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord,
+)]
 #[repr(u8)]
 pub enum SubaccountType {
+    /// Requires the normal multisig approval process.
     Derived = 0,
+    /// Any owner may sign an instruction  as this address.
     OwnerInvoker = 1,
 }
 
@@ -150,8 +174,9 @@ impl Default for SubaccountType {
     }
 }
 
+/// Mapping of a Subaccount to its [SmartWallet].
 #[account]
-#[derive(Default, Debug, PartialEq)]
+#[derive(Copy, Default, Debug, PartialEq, Eq)]
 pub struct SubaccountInfo {
     /// Smart wallet of the sub-account.
     pub smart_wallet: Pubkey,
