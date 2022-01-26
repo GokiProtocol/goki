@@ -3,6 +3,7 @@ import "chai-bn";
 import * as anchor from "@project-serum/anchor";
 import { expectTX } from "@saberhq/chai-solana";
 import {
+  createMemoInstruction,
   PendingTransaction,
   TransactionEnvelope,
 } from "@saberhq/solana-contrib";
@@ -442,7 +443,7 @@ describe("smartWallet", () => {
     });
   });
 
-  describe("owner invoker", () => {
+  describe("Owner Invoker", () => {
     const { provider } = sdk;
     const ownerA = web3.Keypair.generate();
     const ownerB = web3.Keypair.generate();
@@ -664,6 +665,54 @@ describe("smartWallet", () => {
       expect(info2.index).to.bignumber.eq(index.toString());
       expect(info2.smartWallet).to.eqAddress(smartWalletWrapper.key);
       expect(info2.subaccountType).to.deep.eq({ ownerInvoker: {} });
+    });
+
+    it("invalid invoker should fail (v2)", async () => {
+      const index = 0;
+      const [invokerKey] = await smartWalletWrapper.findOwnerInvokerAddress(
+        index
+      );
+      const instructionToExecute = createMemoInstruction("hello", [invokerKey]);
+
+      const [fakeInvoker, invokerBump] = [Keypair.generate(), 254];
+      const fakeInvokerKey = fakeInvoker.publicKey;
+
+      const ix = sdk.programs.SmartWallet.instruction.ownerInvokeInstructionV2(
+        new BN(index),
+        invokerBump,
+        fakeInvokerKey,
+        instructionToExecute.data,
+        {
+          accounts: {
+            smartWallet: smartWalletWrapper.key,
+            owner: ownerA.publicKey,
+          },
+          remainingAccounts: [
+            {
+              pubkey: instructionToExecute.programId,
+              isSigner: false,
+              isWritable: false,
+            },
+            ...instructionToExecute.keys.map((k) => {
+              if (k.isSigner && invokerKey.equals(k.pubkey)) {
+                return {
+                  ...k,
+                  isSigner: false,
+                };
+              }
+              return k;
+            }),
+          ],
+        }
+      );
+      const tx = new TransactionEnvelope(
+        smartWalletWrapper.provider,
+        [ix],
+        [ownerA]
+      );
+      await expectTX(tx).to.be.rejectedWith(
+        "failed to send transaction: Transaction simulation failed: Error processing Instruction 0"
+      );
     });
   });
 });
