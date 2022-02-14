@@ -10,6 +10,7 @@ env:
   CARGO_TERM_COLOR: always
   SOLANA_VERSION: "1.8.11"
   RUST_TOOLCHAIN: "1.58.0"
+  PROGRAM_PATH: "programs/smart-wallet/"
 
 jobs:
   sdk:
@@ -110,3 +111,61 @@ jobs:
       - run: yarn build
       - name: Run e2e tests
         run: nix shell .#ci --command yarn test:e2e
+
+  soteria:
+    name: Soteria Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout changes
+        uses: actions/checkout@v2
+
+      - name: Cache Solana Version
+        uses: actions/cache@v2
+        id: solana-cache
+        with:
+          path: |
+            ~/.rustup
+            ~/.cache/solana
+            ~/.local/share/solana
+          key: solana-${{ runner.os }}-${{ env.SOLANA_VERSION }}
+
+      - name: Cache Soteria Build
+        uses: Swatinem/rust-cache@v1
+        with:
+          target-dir: ${{ env.PROGRAM_PATH }}.coderrect/build # Cache build files for performance
+
+      # Install Cachix
+      - uses: cachix/install-nix-action@v16
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v10
+        with:
+          name: goki
+          extraPullNames: saber
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      # Install Solana
+      - name: Install Solana
+        if: steps.solana-cache.outputs.cache-hit != 'true'
+        run: |
+          nix shell .#ci --command solana-install init ${{ env.SOLANA_VERSION }}
+      - name: Setup Solana Path
+        run: |
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
+          solana --version
+          echo Configuring bpf toolchain...
+          (cd /home/runner/.local/share/solana/install/active_release/bin/sdk/bpf/scripts; ./install.sh)
+      - name: Download Soteria # Always grab the latest version
+        run: |
+          echo Downloading Soteria... 🔬
+          sh -c "$(curl -k https://supercompiler.xyz/install)"
+          export PATH=$PWD/soteria-linux-develop/bin/:$PATH
+          echo "$PWD/soteria-linux-develop/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Run Soteria
+        run: |
+          echo Running Soteria...
+          cd ${{ env.PROGRAM_PATH }}
+          soteria -analyzeAll .
+        shell: bash
