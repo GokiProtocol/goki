@@ -1053,7 +1053,7 @@ checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
 
 [[package]]
 name = "smart-wallet"
-version = "0.5.5"
+version = "0.6.0"
 dependencies = [
  "anchor-lang",
  "vipers",
@@ -1230,7 +1230,7 @@ dependencies = [
 
 [[package]]
 name = "token-signer"
-version = "0.5.5"
+version = "0.6.0"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -1272,9 +1272,9 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "vipers"
-version = "1.6.0"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "626461f1942f70d58f8e3cae13d14efe1c69b2d603c557e5608bb74782fe653e"
+checksum = "a9a8dc4892bbdf8c166bc77882e459324209a1f1d315f336a9622605da340450"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
