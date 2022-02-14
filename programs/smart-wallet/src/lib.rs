@@ -56,7 +56,7 @@ pub mod smart_wallet {
     #[access_control(ctx.accounts.validate())]
     pub fn create_smart_wallet(
         ctx: Context<CreateSmartWallet>,
-        bump: u8,
+        _bump: u8,
         max_owners: u8,
         owners: Vec<Pubkey>,
         threshold: u64,
@@ -69,7 +69,7 @@ pub mod smart_wallet {
 
         let smart_wallet = &mut ctx.accounts.smart_wallet;
         smart_wallet.base = ctx.accounts.base.key();
-        smart_wallet.bump = bump;
+        smart_wallet.bump = *unwrap_int!(ctx.bumps.get("GokiSmartWallet"));
 
         smart_wallet.threshold = threshold;
         smart_wallet.minimum_delay = minimum_delay;
@@ -144,7 +144,7 @@ pub mod smart_wallet {
     #[access_control(ctx.accounts.validate())]
     pub fn create_transaction_with_timelock(
         ctx: Context<CreateTransaction>,
-        bump: u8,
+        _bump: u8,
         instructions: Vec<TXInstruction>,
         eta: i64,
     ) -> ProgramResult {
@@ -180,7 +180,7 @@ pub mod smart_wallet {
         let tx = &mut ctx.accounts.transaction;
         tx.smart_wallet = smart_wallet.key();
         tx.index = index;
-        tx.bump = bump;
+        tx.bump = *unwrap_int!(ctx.bumps.get("GokiTransaction"));
 
         tx.proposer = ctx.accounts.proposer.key();
         tx.instructions = instructions.clone();
@@ -362,7 +362,7 @@ pub mod smart_wallet {
             SubaccountType::Derived => Pubkey::find_program_address(
                 &[
                     b"GokiSmartWalletDerived" as &[u8],
-                    &smart_wallet.key().to_bytes(),
+                    &smart_wallet.to_bytes(),
                     &index.to_le_bytes(),
                 ],
                 &crate::ID,
@@ -370,7 +370,7 @@ pub mod smart_wallet {
             SubaccountType::OwnerInvoker => Pubkey::find_program_address(
                 &[
                     b"GokiSmartWalletOwnerInvoker" as &[u8],
-                    &smart_wallet.key().to_bytes(),
+                    &smart_wallet.to_bytes(),
                     &index.to_le_bytes(),
                 ],
                 &crate::ID,
@@ -402,7 +402,7 @@ pub struct CreateSmartWallet<'info> {
             b"GokiSmartWallet".as_ref(),
             base.key().to_bytes().as_ref()
         ],
-        bump = bump,
+        bump,
         payer = payer,
         space = SmartWallet::space(max_owners),
     )]
@@ -439,7 +439,7 @@ pub struct CreateTransaction<'info> {
             smart_wallet.key().to_bytes().as_ref(),
             smart_wallet.num_transactions.to_le_bytes().as_ref()
         ],
-        bump = bump,
+        bump,
         payer = payer,
         space = Transaction::space(instructions),
     )]
@@ -506,7 +506,7 @@ pub struct CreateSubaccountInfo<'info> {
             b"GokiSubaccountInfo".as_ref(),
             &subaccount.to_bytes()
         ],
-        bump = bump,
+        bump,
         payer = payer
     )]
     pub subaccount_info: Account<'info, SubaccountInfo>,
