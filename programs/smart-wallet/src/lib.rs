@@ -69,7 +69,7 @@ pub mod smart_wallet {
 
         let smart_wallet = &mut ctx.accounts.smart_wallet;
         smart_wallet.base = ctx.accounts.base.key();
-        smart_wallet.bump = *unwrap_int!(ctx.bumps.get("GokiSmartWallet"));
+        smart_wallet.bump = *unwrap_int!(ctx.bumps.get("smart_wallet"));
 
         smart_wallet.threshold = threshold;
         smart_wallet.minimum_delay = minimum_delay;
@@ -180,7 +180,7 @@ pub mod smart_wallet {
         let tx = &mut ctx.accounts.transaction;
         tx.smart_wallet = smart_wallet.key();
         tx.index = index;
-        tx.bump = *unwrap_int!(ctx.bumps.get("GokiTransaction"));
+        tx.bump = *unwrap_int!(ctx.bumps.get("transaction"));
 
         tx.proposer = ctx.accounts.proposer.key();
         tx.instructions = instructions.clone();
