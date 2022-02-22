@@ -23,7 +23,7 @@ pub mod token_signer {
     pub fn invoke_signed_instruction(
         ctx: Context<InvokeSignedInstruction>,
         data: Vec<u8>,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let mint = ctx.accounts.nft_account.mint.to_bytes();
         let seeds: &[&[u8]] = &[b"GokiTokenSigner", &mint];
         let (nft_addr, bump) = Pubkey::find_program_address(seeds, ctx.program_id);
