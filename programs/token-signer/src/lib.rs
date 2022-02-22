@@ -23,7 +23,7 @@ pub mod token_signer {
     pub fn invoke_signed_instruction(
         ctx: Context<InvokeSignedInstruction>,
         data: Vec<u8>,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let mint = ctx.accounts.nft_account.mint.to_bytes();
         let seeds: &[&[u8]] = &[b"GokiTokenSigner", &mint];
         let (nft_addr, bump) = Pubkey::find_program_address(seeds, ctx.program_id);
@@ -70,15 +70,15 @@ pub struct InvokeSignedInstruction<'info> {
     /// PDA associated with the NFT.
     #[account(
         seeds = [
-            b"GokiTokenSigner",
+            b"GokiTokenSigner".as_ref(),
             nft_account.mint.as_ref()
         ],
         bump = bump,
     )]
-    pub nft_pda: UncheckedAccount<'info>,
+    pub nft_pda: SystemAccount<'info>,
 }
 
-#[error]
+#[error_code]
 pub enum ErrorCode {
     #[msg("Unauthorized.")]
     Unauthorized,

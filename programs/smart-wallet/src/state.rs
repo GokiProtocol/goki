@@ -3,7 +3,7 @@
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
-use vipers::unwrap_or_err;
+use vipers::prelude::*;
 
 /// A [SmartWallet] is a multisig wallet with Timelock capabilities.
 #[account]
@@ -47,12 +47,14 @@ impl SmartWallet {
             + std::mem::size_of::<Pubkey>() * (max_owners as usize)
     }
 
+    /// Gets the index of the key in the owners Vec, or None
+    pub fn owner_index_opt(&self, key: Pubkey) -> Option<usize> {
+        self.owners.iter().position(|a| *a == key)
+    }
+
     /// Gets the index of the key in the owners Vec, or error
-    pub fn owner_index(&self, key: Pubkey) -> crate::Result<usize> {
-        Ok(unwrap_or_err!(
-            self.owners.iter().position(|a| *a == key),
-            InvalidOwner
-        ))
+    pub fn owner_index(&self, key: Pubkey) -> Result<usize> {
+        Ok(unwrap_opt!(self.owner_index_opt(key), InvalidOwner))
     }
 }
 

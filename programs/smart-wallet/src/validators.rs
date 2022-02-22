@@ -1,16 +1,15 @@
 //! Account validators.
 
 use crate::*;
-use vipers::{assert_keys_eq, invariant, unwrap_int, validate::Validate};
 
 impl<'info> Validate<'info> for CreateSmartWallet<'info> {
-    fn validate(&self) -> ProgramResult {
+    fn validate(&self) -> Result<()> {
         Ok(())
     }
 }
 
 impl<'info> Validate<'info> for Auth<'info> {
-    fn validate(&self) -> ProgramResult {
+    fn validate(&self) -> Result<()> {
         invariant!(
             self.smart_wallet.to_account_info().is_signer,
             "smart_wallet.is_signer"
@@ -20,14 +19,14 @@ impl<'info> Validate<'info> for Auth<'info> {
 }
 
 impl<'info> Validate<'info> for CreateTransaction<'info> {
-    fn validate(&self) -> ProgramResult {
+    fn validate(&self) -> Result<()> {
         // owner_index check happens later
         Ok(())
     }
 }
 
 impl<'info> Validate<'info> for Approve<'info> {
-    fn validate(&self) -> ProgramResult {
+    fn validate(&self) -> Result<()> {
         assert_keys_eq!(
             self.smart_wallet,
             self.transaction.smart_wallet,
@@ -42,7 +41,7 @@ impl<'info> Validate<'info> for Approve<'info> {
 }
 
 impl<'info> Validate<'info> for ExecuteTransaction<'info> {
-    fn validate(&self) -> ProgramResult {
+    fn validate(&self) -> Result<()> {
         assert_keys_eq!(
             self.smart_wallet,
             self.transaction.smart_wallet,
@@ -86,14 +85,14 @@ impl<'info> Validate<'info> for ExecuteTransaction<'info> {
 }
 
 impl<'info> Validate<'info> for OwnerInvokeInstruction<'info> {
-    fn validate(&self) -> ProgramResult {
+    fn validate(&self) -> Result<()> {
         self.smart_wallet.owner_index(self.owner.key())?;
         Ok(())
     }
 }
 
 impl<'info> Validate<'info> for CreateSubaccountInfo<'info> {
-    fn validate(&self) -> ProgramResult {
+    fn validate(&self) -> Result<()> {
         // no validation necessary
         Ok(())
     }

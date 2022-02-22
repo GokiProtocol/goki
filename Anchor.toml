@@ -1,5 +1,8 @@
-anchor_version = "0.20.1"
-solana_version = "1.8.11"
+anchor_version = "0.22.0"
+solana_version = "1.8.16"
+
+[features]
+seeds = true
 
 [registry]
 url = "https://anchor.projectserum.com"

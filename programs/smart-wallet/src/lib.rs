@@ -24,7 +24,7 @@
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
-use vipers::{invariant, unwrap_int, validate::Validate};
+use vipers::prelude::*;
 
 mod events;
 mod state;
@@ -61,7 +61,7 @@ pub mod smart_wallet {
         owners: Vec<Pubkey>,
         threshold: u64,
         minimum_delay: i64,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         invariant!(minimum_delay >= 0, "delay must be positive");
         invariant!(minimum_delay < MAX_DELAY_SECONDS, DelayTooHigh);
 
@@ -93,7 +93,7 @@ pub mod smart_wallet {
     /// Sets the owners field on the smart_wallet. The only way this can be invoked
     /// is via a recursive call from execute_transaction -> set_owners.
     #[access_control(ctx.accounts.validate())]
-    pub fn set_owners(ctx: Context<Auth>, owners: Vec<Pubkey>) -> ProgramResult {
+    pub fn set_owners(ctx: Context<Auth>, owners: Vec<Pubkey>) -> Result<()> {
         let smart_wallet = &mut ctx.accounts.smart_wallet;
         if (owners.len() as u64) < smart_wallet.threshold {
             smart_wallet.threshold = owners.len() as u64;
@@ -114,7 +114,7 @@ pub mod smart_wallet {
     /// invoked is via a recursive call from execute_transaction ->
     /// change_threshold.
     #[access_control(ctx.accounts.validate())]
-    pub fn change_threshold(ctx: Context<Auth>, threshold: u64) -> ProgramResult {
+    pub fn change_threshold(ctx: Context<Auth>, threshold: u64) -> Result<()> {
         invariant!(
             threshold <= ctx.accounts.smart_wallet.owners.len() as u64,
             InvalidThreshold
@@ -136,7 +136,7 @@ pub mod smart_wallet {
         ctx: Context<CreateTransaction>,
         bump: u8,
         instructions: Vec<TXInstruction>,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         create_transaction_with_timelock(ctx, bump, instructions, NO_ETA)
     }
 
@@ -147,7 +147,7 @@ pub mod smart_wallet {
         _bump: u8,
         instructions: Vec<TXInstruction>,
         eta: i64,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let smart_wallet = &ctx.accounts.smart_wallet;
         let owner_index = smart_wallet.owner_index(ctx.accounts.proposer.key())?;
 
@@ -204,7 +204,7 @@ pub mod smart_wallet {
 
     /// Approves a transaction on behalf of an owner of the smart_wallet.
     #[access_control(ctx.accounts.validate())]
-    pub fn approve(ctx: Context<Approve>) -> ProgramResult {
+    pub fn approve(ctx: Context<Approve>) -> Result<()> {
         let owner_index = ctx
             .accounts
             .smart_wallet
@@ -222,7 +222,7 @@ pub mod smart_wallet {
 
     /// Unapproves a transaction on behalf of an owner of the smart_wallet.
     #[access_control(ctx.accounts.validate())]
-    pub fn unapprove(ctx: Context<Approve>) -> ProgramResult {
+    pub fn unapprove(ctx: Context<Approve>) -> Result<()> {
         let owner_index = ctx
             .accounts
             .smart_wallet
@@ -240,7 +240,7 @@ pub mod smart_wallet {
 
     /// Executes the given transaction if threshold owners have signed it.
     #[access_control(ctx.accounts.validate())]
-    pub fn execute_transaction(ctx: Context<ExecuteTransaction>) -> ProgramResult {
+    pub fn execute_transaction(ctx: Context<ExecuteTransaction>) -> Result<()> {
         let smart_wallet = &ctx.accounts.smart_wallet;
         let wallet_seeds: &[&[&[u8]]] = &[&[
             b"GokiSmartWallet" as &[u8],
@@ -258,7 +258,7 @@ pub mod smart_wallet {
         ctx: Context<ExecuteTransaction>,
         index: u64,
         bump: u8,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let smart_wallet = &ctx.accounts.smart_wallet;
         // Execute the transaction signed by the smart_wallet.
         let wallet_seeds: &[&[&[u8]]] = &[&[
@@ -281,7 +281,7 @@ pub mod smart_wallet {
         index: u64,
         bump: u8,
         ix: TXInstruction,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let smart_wallet = &ctx.accounts.smart_wallet;
         // Execute the transaction signed by the smart_wallet.
         let invoker_seeds: &[&[&[u8]]] = &[&[
@@ -318,7 +318,7 @@ pub mod smart_wallet {
         bump: u8,
         invoker: Pubkey,
         data: Vec<u8>,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let smart_wallet = &ctx.accounts.smart_wallet;
         // Execute the transaction signed by the smart_wallet.
         let invoker_seeds: &[&[&[u8]]] = &[&[
@@ -357,7 +357,7 @@ pub mod smart_wallet {
         smart_wallet: Pubkey,
         index: u64,
         subaccount_type: SubaccountType,
-    ) -> ProgramResult {
+    ) -> Result<()> {
         let (address, _derived_bump) = match subaccount_type {
             SubaccountType::Derived => Pubkey::find_program_address(
                 &[
@@ -517,7 +517,7 @@ pub struct CreateSubaccountInfo<'info> {
     pub system_program: Program<'info, System>,
 }
 
-fn do_execute_transaction(ctx: Context<ExecuteTransaction>, seeds: &[&[&[u8]]]) -> ProgramResult {
+fn do_execute_transaction(ctx: Context<ExecuteTransaction>, seeds: &[&[&[u8]]]) -> Result<()> {
     for ix in ctx.accounts.transaction.instructions.iter() {
         solana_program::program::invoke_signed(&(ix).into(), ctx.remaining_accounts, seeds)?;
     }
@@ -537,7 +537,7 @@ fn do_execute_transaction(ctx: Context<ExecuteTransaction>, seeds: &[&[&[u8]]]) 
 }
 
 /// Program errors.
-#[error]
+#[error_code]
 pub enum ErrorCode {
     #[msg("The given owner is not part of this smart wallet.")]
     InvalidOwner,

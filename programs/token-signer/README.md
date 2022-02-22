@@ -16,3 +16,9 @@ This merely checks for the presence of at least one token in the user's wallet. 
 For example, let's say there is a function for auto-compounding via market orders on an AMM. This function should be gated, as it is vulnerable to flash loan exploits. By distributing a token to each member, the permissions can be assigned to trusted parties.
 
 Note that the account cannot be revoked, so this may be suboptimal. A whitelist may make more sense.
+
+## License
+
+Goki Protocol is licensed under the GNU Affero General Public License v3.0.
+
+In short, this means that any changes to this code must be made open source and available under the AGPL-v3.0 license, even if only used privately. If you have a need to use this program and cannot respect the terms of the license, please message us our team directly at [team@goki.so](mailto:team@goki.so).
