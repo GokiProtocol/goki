@@ -78,7 +78,7 @@ pub struct InvokeSignedInstruction<'info> {
     pub nft_pda: UncheckedAccount<'info>,
 }
 
-#[error]
+#[error_code]
 pub enum ErrorCode {
     #[msg("Unauthorized.")]
     Unauthorized,

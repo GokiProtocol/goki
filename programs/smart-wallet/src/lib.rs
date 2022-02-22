@@ -485,7 +485,7 @@ fn do_execute_transaction(ctx: Context<ExecuteTransaction>, seeds: &[&[&[u8]]]) 
     Ok(())
 }
 
-#[error]
+#[error_code]
 pub enum ErrorCode {
     #[msg("The given owner is not part of this smart wallet.")]
     InvalidOwner,
