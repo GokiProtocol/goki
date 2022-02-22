@@ -1,4 +1,3 @@
-import { BN } from "@project-serum/anchor";
 import { newProgramMap } from "@saberhq/anchor-contrib";
 import type { AugmentedProvider, Provider } from "@saberhq/solana-contrib";
 import {
@@ -8,6 +7,7 @@ import {
 import { u64 } from "@saberhq/token-utils";
 import type { PublicKey, Signer } from "@solana/web3.js";
 import { Keypair, SystemProgram } from "@solana/web3.js";
+import BN from "bn.js";
 import mapValues from "lodash.mapvalues";
 
 import type { Programs } from "./constants";

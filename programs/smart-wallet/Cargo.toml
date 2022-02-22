@@ -1,6 +1,6 @@
 [package]
 name = "smart-wallet"
-version = "0.5.4"
+version = "0.6.1"
 description = "Multisig Solana wallet with Timelock capabilities"
 homepage = "https://goki.so"
 repository = "https://github.com/GokiProtocol/goki"

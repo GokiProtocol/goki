@@ -297,6 +297,52 @@ export class SmartWalletWrapper {
   }
 
   /**
+   * Executes a transaction using an owner invoker address.
+   */
+  async ownerInvokeInstructionV2({
+    instruction,
+    index,
+    owner = this.provider.wallet.publicKey,
+  }: {
+    instruction: TransactionInstruction;
+    index: number;
+    owner?: PublicKey;
+  }): Promise<TransactionEnvelope> {
+    const [invokerAddress, invokerBump] = await this.findOwnerInvokerAddress(
+      index
+    );
+    const ix = this.program.instruction.ownerInvokeInstructionV2(
+      new BN(index),
+      invokerBump,
+      invokerAddress,
+      instruction.data,
+      {
+        accounts: {
+          smartWallet: this.key,
+          owner,
+        },
+        remainingAccounts: [
+          {
+            pubkey: instruction.programId,
+            isSigner: false,
+            isWritable: false,
+          },
+          ...instruction.keys.map((k) => {
+            if (k.isSigner && invokerAddress.equals(k.pubkey)) {
+              return {
+                ...k,
+                isSigner: false,
+              };
+            }
+            return k;
+          }),
+        ],
+      }
+    );
+    return new TransactionEnvelope(this.provider, [ix]);
+  }
+
+  /**
    * setOwners
    */
   setOwners(owners: PublicKey[]): TransactionEnvelope {

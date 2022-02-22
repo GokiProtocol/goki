@@ -33,7 +33,7 @@ impl<'info> Validate<'info> for Approve<'info> {
             self.transaction.smart_wallet,
             "smart_wallet"
         );
-        require!(
+        invariant!(
             self.smart_wallet.owner_set_seqno == self.transaction.owner_set_seqno,
             OwnerSetChanged
         );
@@ -48,23 +48,23 @@ impl<'info> Validate<'info> for ExecuteTransaction<'info> {
             self.transaction.smart_wallet,
             "smart_wallet"
         );
-        require!(
+        invariant!(
             self.smart_wallet.owner_set_seqno == self.transaction.owner_set_seqno,
             OwnerSetChanged
         );
 
         // Has this been executed already?
-        require!(self.transaction.executed_at == -1, AlreadyExecuted);
+        invariant!(self.transaction.executed_at == -1, AlreadyExecuted);
 
         let eta = self.transaction.eta;
         let clock = Clock::get()?;
         let current_ts = clock.unix_timestamp;
         msg!("current_ts: {}; eta: {}", current_ts, eta);
         // Has transaction surpassed timelock?
-        require!(current_ts >= eta, TransactionNotReady);
+        invariant!(current_ts >= eta, TransactionNotReady);
         if eta != NO_ETA {
             // Has grace period passed?
-            require!(
+            invariant!(
                 current_ts <= unwrap_int!(eta.checked_add(self.smart_wallet.grace_period)),
                 TransactionIsStale
             );
@@ -72,7 +72,7 @@ impl<'info> Validate<'info> for ExecuteTransaction<'info> {
 
         // Do we have enough signers to execute the TX?
         let sig_count = self.transaction.num_signers();
-        require!(
+        invariant!(
             (sig_count as u64) >= self.smart_wallet.threshold,
             NotEnoughSigners
         );

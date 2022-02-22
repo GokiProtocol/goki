@@ -1,10 +1,7 @@
-import "chai-as-promised";
-import "chai-bn";
-
 import * as anchor from "@project-serum/anchor";
 import { chaiSolana } from "@saberhq/chai-solana";
 import { SolanaProvider } from "@saberhq/solana-contrib";
-import chai from "chai";
+import * as chai from "chai";
 
 import type { Programs } from "../src";
 import { GokiSDK } from "../src";
