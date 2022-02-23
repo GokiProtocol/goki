@@ -20,5 +20,5 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = ">=0.17.0"
-vipers = "1.5.5"
+anchor-lang = "^0.22"
+vipers = "^2.0"
