@@ -27,10 +27,12 @@ use anchor_lang::solana_program;
 use vipers::prelude::*;
 
 mod events;
+mod instructions;
 mod state;
 mod validators;
 
 pub use events::*;
+pub use instructions::*;
 pub use state::*;
 
 /// Number of seconds in a day.
@@ -385,6 +387,18 @@ pub mod smart_wallet {
         info.index = index;
 
         Ok(())
+    }
+
+    pub fn init_ix_buffer(ctx: Context<InitIxBuffer>) -> Result<()> {
+        instructions::init_ix_buffer::handler(ctx)
+    }
+
+    pub fn execute_ix(ctx: Context<ExecuteIx>) -> Result<()> {
+        instructions::execute_ix::handler(ctx)
+    }
+
+    pub fn write_ix(ctx: Context<WriteIx>) -> Result<()> {
+        instructions::write_ix::handler(ctx)
     }
 }
 

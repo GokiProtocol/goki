@@ -196,9 +196,12 @@ pub struct SubaccountInfo {
 
 /// An account which holds an array of TxInstructions to be executed.
 #[account]
-#[derive(Copy, Default, Debug, PartialEq, Eq)]
+#[derive(Default, Debug, PartialEq)]
 pub struct TXInstructionBuffer {
+    /// Execution count on this buffer.
     pub exec_count: u8,
+    /// Key that can write to the buffer.
     pub writer: Pubkey,
+    /// Staged instructions to be executed.
     pub staged_tx_instructions: Vec<TXInstruction>,
 }
