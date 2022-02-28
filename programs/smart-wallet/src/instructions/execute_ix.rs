@@ -5,6 +5,6 @@ use crate::*;
 #[derive(Accounts)]
 pub struct ExecuteIx {}
 
-pub fn handler<'info>(_ctx: Context<ExecuteIx>) -> Result<()> {
-    unimplemented!();
+pub fn handler(_ctx: Context<ExecuteIx>) -> Result<()> {
+    unimplemented!()
 }

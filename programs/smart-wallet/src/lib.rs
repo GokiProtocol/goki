@@ -397,8 +397,8 @@ pub mod smart_wallet {
         instructions::execute_ix::handler(ctx)
     }
 
-    pub fn write_ix(ctx: Context<WriteIx>) -> Result<()> {
-        instructions::write_ix::handler(ctx)
+    pub fn write_ix(ctx: Context<WriteIx>, ix: TXInstruction) -> Result<()> {
+        instructions::write_ix::handler(ctx, ix)
     }
 }
 
