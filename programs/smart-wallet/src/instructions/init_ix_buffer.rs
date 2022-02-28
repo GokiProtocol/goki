@@ -6,6 +6,7 @@ use crate::*;
 pub struct InitIxBuffer<'info> {
     #[account(zero)]
     pub buffer: Account<'info, TXInstructionBuffer>,
+    /// CHECK: Writer account that can write to the buffer.
     pub writer: UncheckedAccount<'info>,
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,

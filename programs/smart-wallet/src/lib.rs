@@ -393,7 +393,7 @@ pub mod smart_wallet {
         instructions::init_ix_buffer::handler(ctx)
     }
 
-    pub fn execute_ix(ctx: Context<ExecuteIx>) -> Result<()> {
+    pub fn execute_ix<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Result<()> {
         instructions::execute_ix::handler(ctx)
     }
 
