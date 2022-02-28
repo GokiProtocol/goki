@@ -3,8 +3,23 @@
 use crate::*;
 
 #[derive(Accounts)]
-pub struct InitIxBuffer {}
+pub struct InitIxBuffer<'info> {
+    #[account(zero)]
+    pub buffer: Account<'info, TXInstructionBuffer>,
+    pub writer: UncheckedAccount<'info>,
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
 
-pub fn handler<'info>(_ctx: Context<InitIxBuffer>) -> Result<()> {
-    unimplemented!();
+pub fn handler<'info>(ctx: Context<InitIxBuffer>) -> Result<()> {
+    let buffer = &mut ctx.accounts.buffer;
+    buffer.writer = ctx.accounts.writer.key();
+
+    Ok(())
+}
+
+impl<'info> Validate<'info> for InitIxBuffer<'info> {
+    fn validate(&self) -> Result<()> {
+        Ok(())
+    }
 }
