@@ -40,7 +40,7 @@ describe("smartWallet", () => {
     const ownerD = web3.Keypair.generate();
     const owners = [ownerA.publicKey, ownerB.publicKey, ownerC.publicKey];
 
-    const threshold = new anchor.BN(2);
+    const threshold = new BN(2);
 
     let smartWalletWrapper: SmartWalletWrapper;
 
@@ -61,7 +61,7 @@ describe("smartWallet", () => {
       await smartWalletWrapper.reloadData();
       invariant(smartWalletWrapper.data, "smartWallet was not created");
       expect(smartWalletWrapper.data.threshold).to.be.bignumber.equal(
-        new anchor.BN(2)
+        new BN(2)
       );
       expect(smartWalletWrapper.data.owners).to.deep.equal(owners);
       const [smartWalletKey, bump] = await findSmartWallet(
