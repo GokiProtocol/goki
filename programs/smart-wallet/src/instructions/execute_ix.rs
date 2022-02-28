@@ -1,4 +1,4 @@
-//! Executes an instruction off of the [TXInstructionBuffer].
+//! Executes an instruction off of the [InstructionBuffer].
 
 use anchor_lang::solana_program::program::invoke;
 
@@ -7,7 +7,7 @@ use crate::*;
 #[derive(Accounts)]
 pub struct ExecuteIx<'info> {
     #[account(mut)]
-    pub buffer: Account<'info, TXInstructionBuffer>,
+    pub buffer: Box<Account<'info, InstructionBuffer>>,
 }
 
 pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Result<()> {

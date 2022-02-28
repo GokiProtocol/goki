@@ -1,15 +1,13 @@
-//! Creates a [TXInstructionBuffer].
+//! Creates a [InstructionBuffer].
 
 use crate::*;
 
 #[derive(Accounts)]
 pub struct InitIxBuffer<'info> {
     #[account(zero)]
-    pub buffer: Account<'info, TXInstructionBuffer>,
+    pub buffer: Account<'info, InstructionBuffer>,
     /// CHECK: Writer account that can write to the buffer.
     pub writer: UncheckedAccount<'info>,
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
 }
 
 pub fn handler<'info>(ctx: Context<InitIxBuffer>) -> Result<()> {

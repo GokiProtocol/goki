@@ -197,7 +197,7 @@ pub struct SubaccountInfo {
 /// An account which holds an array of TxInstructions to be executed.
 #[account]
 #[derive(Default, Debug, PartialEq)]
-pub struct TXInstructionBuffer {
+pub struct InstructionBuffer {
     /// Execution count on this buffer.
     pub exec_count: u8,
     /// Key that can write to the buffer.

@@ -1,11 +1,11 @@
-//! Writes an instruction to the [TXInstructionBuffer].
+//! Writes an instruction to the [InstructionBuffer].
 
 use crate::*;
 
 #[derive(Accounts)]
 pub struct WriteIx<'info> {
     #[account(mut)]
-    pub buffer: Account<'info, TXInstructionBuffer>,
+    pub buffer: Box<Account<'info, InstructionBuffer>>,
     pub writer: Signer<'info>,
 }
 

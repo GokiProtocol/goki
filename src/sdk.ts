@@ -12,6 +12,7 @@ import mapValues from "lodash.mapvalues";
 
 import type { Programs } from "./constants";
 import { GOKI_ADDRESSES, GOKI_IDLS } from "./constants";
+import { InstructionLoaderWrapper } from "./wrappers/instructionLoader";
 import type { PendingSmartWallet } from "./wrappers/smartWallet";
 import {
   findOwnerInvokerAddress,
@@ -29,6 +30,13 @@ export class GokiSDK {
     readonly provider: AugmentedProvider,
     readonly programs: Programs
   ) {}
+
+  /**
+   * Wrapper for the instruction loader.
+   */
+  get instructionLoader(): InstructionLoaderWrapper {
+    return new InstructionLoaderWrapper(this);
+  }
 
   /**
    * Creates a new instance of the SDK with the given keypair.

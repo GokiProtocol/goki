@@ -25,7 +25,7 @@ import {
 } from "../src/wrappers/smartWallet";
 import { makeSDK } from "./workspace";
 
-describe("smartWallet", () => {
+describe("smart wallet", () => {
   const { BN, web3 } = anchor;
   const sdk = makeSDK();
   const program = sdk.programs.SmartWallet;
