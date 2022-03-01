@@ -1,5 +1,10 @@
 import { TOKEN_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token";
 import { expectTXTable } from "@saberhq/chai-solana";
+import {
+  createMemoInstruction,
+  MEMO_PROGRAM_ID,
+  TransactionEnvelope,
+} from "@saberhq/solana-contrib";
 import { MintLayout, SPLToken } from "@saberhq/token-utils";
 import type { PublicKey } from "@solana/web3.js";
 import { Keypair, PACKET_DATA_SIZE, SystemProgram } from "@solana/web3.js";
@@ -68,5 +73,48 @@ describe("instruction loader", () => {
       newAccountKP.publicKey
     );
     expect(newAccountInfo?.accountInfo.owner).to.eqAddress(TOKEN_PROGRAM_ID);
+
+    const bufferData = await sdk.instructionLoader.loadBufferData(
+      bufferAccount
+    );
+    expect(bufferData.execCount).to.be.eq(1);
+  });
+
+  it("Test write and execute multiple instructions", async () => {
+    const signers = new Array(3).fill(null).map(() => Keypair.generate());
+    const writeTXs = signers.map((s) =>
+      sdk.instructionLoader.writeInstruction(
+        createMemoInstruction("test", [s.publicKey]),
+        bufferAccount
+      )
+    );
+    const writeTx = TransactionEnvelope.combineAll(...writeTXs);
+    await expectTXTable(writeTx, "write memo instructions to buffer").to.be
+      .fulfilled;
+
+    const executeTXs = signers.map((s) => {
+      const tx = sdk.instructionLoader.executeInstruction(bufferAccount, [
+        {
+          pubkey: MEMO_PROGRAM_ID,
+          isSigner: false,
+          isWritable: false,
+        },
+        {
+          pubkey: s.publicKey,
+          isSigner: true,
+          isWritable: false,
+        },
+      ]);
+      tx.addSigners(s);
+      return tx;
+    });
+    const execTx = TransactionEnvelope.combineAll(...executeTXs);
+    await expectTXTable(execTx, "execute memo instructions off buffer").to.be
+      .fulfilled;
+
+    const bufferData = await sdk.instructionLoader.loadBufferData(
+      bufferAccount
+    );
+    expect(bufferData.execCount).to.be.eq(3);
   });
 });
