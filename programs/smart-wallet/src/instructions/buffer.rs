@@ -1,4 +1,4 @@
-//! Creates a [InstructionBuffer].
+//! Init or close an [InstructionBuffer].
 
 use crate::*;
 
