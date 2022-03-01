@@ -10,7 +10,7 @@ pub struct InitIxBuffer<'info> {
     pub writer: UncheckedAccount<'info>,
 }
 
-pub fn handle_init<'info>(ctx: Context<InitIxBuffer>) -> Result<()> {
+pub fn handle_init(ctx: Context<InitIxBuffer>) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
     buffer.writer = ctx.accounts.writer.key();
 
