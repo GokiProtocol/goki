@@ -390,7 +390,11 @@ pub mod smart_wallet {
     }
 
     pub fn init_ix_buffer(ctx: Context<InitIxBuffer>) -> Result<()> {
-        instructions::init_ix_buffer::handler(ctx)
+        instructions::buffer::handle_init(ctx)
+    }
+
+    pub fn close_ix_buffer(ctx: Context<CloseIxBuffer>) -> Result<()> {
+        instructions::buffer::handle_close(ctx)
     }
 
     pub fn execute_ix<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Result<()> {
