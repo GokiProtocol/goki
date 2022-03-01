@@ -194,24 +194,14 @@ pub struct SubaccountInfo {
     pub index: u64,
 }
 
-/// An account which holds the data of a single [TXInstruction].
-/// Creating this allows an owner-invoker to execute a transaction
-/// with a minimal transaction size.
+/// An account which holds an array of TxInstructions to be executed.
 #[account]
 #[derive(Default, Debug, PartialEq)]
-pub struct StagedTXInstruction {
-    /// The [SmartWallet] to execute this on.
-    pub smart_wallet: Pubkey,
-    /// The owner-invoker index.
-    pub index: u64,
-    /// Bump seed of the owner-invoker.
-    pub owner_invoker_bump: u8,
-
-    /// The owner which will execute the instruction.
-    pub owner: Pubkey,
-    /// Owner set sequence number.
-    pub owner_set_seqno: u32,
-
-    /// The instruction to execute.
-    pub ix: TXInstruction,
+pub struct InstructionBuffer {
+    /// Execution count on this buffer.
+    pub exec_count: u8,
+    /// Key that can write to the buffer.
+    pub writer: Pubkey,
+    /// Staged instructions to be executed.
+    pub staged_tx_instructions: Vec<TXInstruction>,
 }

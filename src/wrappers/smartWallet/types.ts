@@ -3,7 +3,7 @@ import type { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import type BN from "bn.js";
 
 import type { SmartWalletData } from "../../programs";
-import type { SmartWalletWrapper } from ".";
+import type { SmartWalletWrapper } from "./index";
 
 export type InitSmartWalletWrapperArgs = {
   readonly bump: number;
