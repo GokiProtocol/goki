@@ -10,9 +10,24 @@ pub struct InitIxBuffer<'info> {
     pub writer: UncheckedAccount<'info>,
 }
 
+/// Emitted when a [InstructionBuffer] is initialized.
+#[event]
+pub struct InitBufferEvent {
+    /// The [Instruction::writer].
+    #[index]
+    pub writer: Pubkey,
+    /// The buffer.
+    pub buffer: Pubkey,
+}
+
 pub fn handle_init(ctx: Context<InitIxBuffer>) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
     buffer.writer = ctx.accounts.writer.key();
+
+    emit!(InitBufferEvent {
+        writer: buffer.writer,
+        buffer: buffer.key()
+    });
 
     Ok(())
 }
@@ -30,7 +45,21 @@ pub struct CloseIxBuffer<'info> {
     pub writer: Signer<'info>,
 }
 
-pub fn handle_close(_ctx: Context<CloseIxBuffer>) -> Result<()> {
+/// Emitted when an [InstructionBuffer] is closed.
+#[event]
+pub struct CloseBufferEvent {
+    /// The [Instruction::writer].
+    #[index]
+    pub writer: Pubkey,
+    /// The buffer.
+    pub buffer: Pubkey,
+}
+
+pub fn handle_close(ctx: Context<CloseIxBuffer>) -> Result<()> {
+    emit!(CloseBufferEvent {
+        writer: ctx.accounts.writer.key(),
+        buffer: ctx.accounts.buffer.key(),
+    });
     Ok(())
 }
 
