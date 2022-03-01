@@ -117,4 +117,12 @@ describe("instruction loader", () => {
     );
     expect(bufferData.execCount).to.be.eq(3);
   });
+
+  it("Close instruction buffer", async () => {
+    const tx = sdk.instructionLoader.closeBuffer(bufferAccount);
+    await expectTXTable(tx, "close buffer").to.be.fulfilled;
+
+    const bufferAccountInfo = await sdk.provider.getAccountInfo(bufferAccount);
+    expect(bufferAccountInfo).to.be.null;
+  });
 });

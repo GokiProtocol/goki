@@ -59,6 +59,20 @@ export class InstructionLoaderWrapper {
     };
   }
 
+  closeBuffer(
+    bufferAccount: PublicKey,
+    writer: PublicKey = this.sdk.provider.wallet.publicKey
+  ): TransactionEnvelope {
+    return new TransactionEnvelope(this.sdk.provider, [
+      this.program.instruction.closeIxBuffer({
+        accounts: {
+          buffer: bufferAccount,
+          writer,
+        },
+      }),
+    ]);
+  }
+
   /**
    * Executes an instruction from the buffer.
    */
