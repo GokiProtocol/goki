@@ -13,7 +13,7 @@ pub struct InitIxBuffer<'info> {
 /// Emitted when a [InstructionBuffer] is initialized.
 #[event]
 pub struct InitBufferEvent {
-    /// The [Instruction::writer].
+    /// The [InstructionBuffer::writer].
     #[index]
     pub writer: Pubkey,
     /// The buffer.
@@ -48,7 +48,7 @@ pub struct CloseIxBuffer<'info> {
 /// Emitted when an [InstructionBuffer] is closed.
 #[event]
 pub struct CloseBufferEvent {
-    /// The [Instruction::writer].
+    /// The [InstructionBuffer::writer].
     #[index]
     pub writer: Pubkey,
     /// The buffer.
