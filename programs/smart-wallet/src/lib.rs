@@ -400,8 +400,13 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn execute_ix<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Result<()> {
-        instructions::execute_ix::handler(ctx)
+    pub fn execute_ix_with_invoker<'info>(
+        ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>,
+        index: u64,
+        bump: u8,
+        smart_wallet: Pubkey,
+    ) -> Result<()> {
+        instructions::execute_ix::handle_with_invoker(ctx, index, bump, smart_wallet)
     }
 
     #[access_control(ctx.accounts.validate())]
