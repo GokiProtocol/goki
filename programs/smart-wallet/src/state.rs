@@ -200,6 +200,8 @@ pub struct SubaccountInfo {
 pub struct InstructionBuffer {
     /// Execution count on this buffer.
     pub exec_count: u8,
+    /// Admin on the buffer to set roles.
+    pub admin: Pubkey,
     /// Key that can execute instructions off the buffer.
     pub executor: Pubkey,
     /// Key that can write to the buffer.

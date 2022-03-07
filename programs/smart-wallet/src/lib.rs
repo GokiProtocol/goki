@@ -411,7 +411,7 @@ pub mod smart_wallet {
 
     #[access_control(ctx.accounts.validate())]
     pub fn set_buffer_executer(ctx: Context<SetBufferExecuter>, executer: Pubkey) -> Result<()> {
-        instructions::set_buffer_executer::handler(ctx, executer)
+        instructions::buffer::handle_set_executor(ctx, executer)
     }
 }
 

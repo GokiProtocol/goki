@@ -6,8 +6,8 @@ use crate::*;
 pub struct InitIxBuffer<'info> {
     #[account(zero)]
     pub buffer: Account<'info, InstructionBuffer>,
-    /// CHECK: This can be an arbitrary account. Writer account that can write to the buffer.
-    pub writer: UncheckedAccount<'info>,
+    /// CHECK: This can be an arbitrary account.
+    pub admin: UncheckedAccount<'info>,
 }
 
 /// Emitted when a [InstructionBuffer] is initialized.
@@ -15,17 +15,18 @@ pub struct InitIxBuffer<'info> {
 pub struct InitBufferEvent {
     /// The [InstructionBuffer::writer].
     #[index]
-    pub writer: Pubkey,
+    pub admin: Pubkey,
     /// The buffer.
     pub buffer: Pubkey,
 }
 
 pub fn handle_init(ctx: Context<InitIxBuffer>) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
-    buffer.writer = ctx.accounts.writer.key();
+    buffer.admin = ctx.accounts.admin.key();
+    buffer.writer = ctx.accounts.admin.key();
 
     emit!(InitBufferEvent {
-        writer: buffer.writer,
+        admin: buffer.admin,
         buffer: buffer.key()
     });
 
@@ -66,6 +67,30 @@ pub fn handle_close(ctx: Context<CloseIxBuffer>) -> Result<()> {
 impl<'info> Validate<'info> for CloseIxBuffer<'info> {
     fn validate(&self) -> Result<()> {
         assert_keys_eq!(self.writer.key(), self.buffer.writer);
+
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+pub struct SetBufferExecuter<'info> {
+    #[account(mut)]
+    pub buffer: Box<Account<'info, InstructionBuffer>>,
+    pub admin: Signer<'info>,
+}
+
+pub fn handle_set_executor<'info>(ctx: Context<SetBufferExecuter>, executer: Pubkey) -> Result<()> {
+    let buffer = &mut ctx.accounts.buffer;
+    buffer.executor = executer;
+
+    Ok(())
+}
+
+impl<'info> Validate<'info> for SetBufferExecuter<'info> {
+    fn validate(&self) -> Result<()> {
+        invariant!(self.buffer.exec_count == 0);
+        assert_keys_eq!(self.buffer.admin, self.admin);
+        assert_keys_eq!(self.buffer.executor, Pubkey::default());
 
         Ok(())
     }
