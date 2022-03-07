@@ -518,15 +518,6 @@ pub struct OwnerInvokeInstruction<'info> {
     pub owner: Signer<'info>,
 }
 
-/// Accounts for [smart_wallet::owner_invoke_instruction].
-#[derive(Accounts)]
-pub struct OwnerInvokeInstructionV2<'info> {
-    /// The [SmartWallet].
-    pub smart_wallet: Account<'info, SmartWallet>,
-    /// An owner of the [SmartWallet].
-    pub owner: Signer<'info>,
-}
-
 /// Accounts for [smart_wallet::create_subaccount_info].
 #[derive(Accounts)]
 #[instruction(bump: u8, subaccount: Pubkey)]
