@@ -107,4 +107,22 @@ export class InstructionLoaderWrapper {
       }),
     ]);
   }
+
+  /**
+   * Set the executor for the instruction buffer.
+   */
+  setExecutor(
+    bufferAccount: PublicKey,
+    executor: PublicKey,
+    writer: PublicKey = this.sdk.provider.wallet.publicKey
+  ): TransactionEnvelope {
+    return new TransactionEnvelope(this.sdk.provider, [
+      this.program.instruction.setBufferExecuter(executor, {
+        accounts: {
+          buffer: bufferAccount,
+          writer,
+        },
+      }),
+    ]);
+  }
 }

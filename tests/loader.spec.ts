@@ -6,8 +6,12 @@ import {
   TransactionEnvelope,
 } from "@saberhq/solana-contrib";
 import { MintLayout, SPLToken } from "@saberhq/token-utils";
-import type { PublicKey } from "@solana/web3.js";
-import { Keypair, PACKET_DATA_SIZE, SystemProgram } from "@solana/web3.js";
+import {
+  Keypair,
+  PACKET_DATA_SIZE,
+  PublicKey,
+  SystemProgram,
+} from "@solana/web3.js";
 import { expect } from "chai";
 
 import { makeSDK } from "./workspace";
@@ -33,6 +37,20 @@ describe("instruction loader", () => {
     expect(bufferData.execCount).to.eql(0);
     expect(bufferData.writer).to.eqAddress(sdk.provider.wallet.publicKey);
     expect(bufferData.stagedTxInstructions).eql([]);
+    expect(bufferData.executor).to.eqAddress(PublicKey.default);
+  });
+
+  it("Test set executor", async () => {
+    const expectedExecutor = Keypair.generate().publicKey;
+    const tx = sdk.instructionLoader.setExecutor(
+      bufferAccount,
+      expectedExecutor
+    );
+    await expectTXTable(tx, "set the buffer's executer").to.be.fulfilled;
+    const bufferData = await sdk.instructionLoader.loadBufferData(
+      bufferAccount
+    );
+    expect(bufferData.executor).to.be.eqAddress(expectedExecutor);
   });
 
   it("Test write and execute instruction", async () => {
