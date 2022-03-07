@@ -1,6 +1,29 @@
 //! Init or close an [InstructionBuffer].
 
+use vipers::program_err;
+
 use crate::*;
+
+#[derive(Debug, Eq, PartialEq)]
+#[repr(C)]
+pub enum BufferRole {
+    Admin,
+    Writer,
+    Executer,
+}
+
+impl TryFrom<u8> for BufferRole {
+    type Error = Error;
+
+    fn try_from(value: u8) -> Result<Self> {
+        match value {
+            0 => Ok(BufferRole::Admin),
+            1 => Ok(BufferRole::Writer),
+            2 => Ok(BufferRole::Executer),
+            _ => program_err!(InvalidBufferRole),
+        }
+    }
+}
 
 #[derive(Accounts)]
 pub struct InitIxBuffer<'info> {
@@ -73,24 +96,35 @@ impl<'info> Validate<'info> for CloseIxBuffer<'info> {
 }
 
 #[derive(Accounts)]
-pub struct SetBufferExecuter<'info> {
+pub struct SetBufferRole<'info> {
     #[account(mut)]
     pub buffer: Box<Account<'info, InstructionBuffer>>,
     pub admin: Signer<'info>,
 }
 
-pub fn handle_set_executor<'info>(ctx: Context<SetBufferExecuter>, executer: Pubkey) -> Result<()> {
+pub fn handle_set_role<'info>(
+    ctx: Context<SetBufferRole>,
+    role: BufferRole,
+    key: Pubkey,
+) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
-    buffer.executor = executer;
+
+    match role {
+        BufferRole::Admin => buffer.admin = key,
+        BufferRole::Writer => buffer.writer = key,
+        BufferRole::Executer => {
+            assert_keys_eq!(buffer.executor, Pubkey::default());
+            buffer.executor = key
+        }
+    }
 
     Ok(())
 }
 
-impl<'info> Validate<'info> for SetBufferExecuter<'info> {
+impl<'info> Validate<'info> for SetBufferRole<'info> {
     fn validate(&self) -> Result<()> {
         invariant!(self.buffer.exec_count == 0);
         assert_keys_eq!(self.buffer.admin, self.admin);
-        assert_keys_eq!(self.buffer.executor, Pubkey::default());
 
         Ok(())
     }

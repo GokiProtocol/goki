@@ -202,9 +202,9 @@ pub struct InstructionBuffer {
     pub exec_count: u8,
     /// Admin on the buffer to set roles.
     pub admin: Pubkey,
-    /// Key that can execute instructions off the buffer.
+    /// Role that can execute instructions off the buffer.
     pub executor: Pubkey,
-    /// Key that can write to the buffer.
+    /// Role that can write to the buffer.
     pub writer: Pubkey,
     /// Staged instructions to be executed.
     pub staged_tx_instructions: Vec<TXInstruction>,

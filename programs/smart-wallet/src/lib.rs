@@ -410,8 +410,8 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn set_buffer_executer(ctx: Context<SetBufferExecuter>, executer: Pubkey) -> Result<()> {
-        instructions::buffer::handle_set_executor(ctx, executer)
+    pub fn set_buffer_role(ctx: Context<SetBufferRole>, role: u8, key: Pubkey) -> Result<()> {
+        instructions::buffer::handle_set_role(ctx, role.try_into()?, key)
     }
 }
 
@@ -586,4 +586,6 @@ pub enum ErrorCode {
     OwnerSetChanged,
     #[msg("Subaccount does not belong to smart wallet.")]
     SubaccountOwnerMismatch,
+    #[msg("Invlaid buffer role.")]
+    InvalidBufferRole,
 }
