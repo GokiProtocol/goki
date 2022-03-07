@@ -408,6 +408,11 @@ pub mod smart_wallet {
     pub fn write_ix(ctx: Context<WriteIx>, ix: TXInstruction) -> Result<()> {
         instructions::write_ix::handler(ctx, ix)
     }
+
+    #[access_control(ctx.accounts.validate())]
+    pub fn set_buffer_executer(ctx: Context<SetBufferExecuter>, executer: Pubkey) -> Result<()> {
+        instructions::set_buffer_executer::handler(ctx, executer)
+    }
 }
 
 /// Accounts for [smart_wallet::create_smart_wallet].
