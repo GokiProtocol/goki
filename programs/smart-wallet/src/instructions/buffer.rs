@@ -102,11 +102,7 @@ pub struct SetBufferRole<'info> {
     pub admin: Signer<'info>,
 }
 
-pub fn handle_set_role<'info>(
-    ctx: Context<SetBufferRole>,
-    role: BufferRole,
-    key: Pubkey,
-) -> Result<()> {
+pub fn handle_set_role(ctx: Context<SetBufferRole>, role: BufferRole, key: Pubkey) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
 
     match role {
