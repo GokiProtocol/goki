@@ -40,19 +40,6 @@ describe("instruction loader", () => {
     expect(bufferData.executor).to.eqAddress(PublicKey.default);
   });
 
-  it("Test set executor", async () => {
-    const expectedExecutor = Keypair.generate().publicKey;
-    const tx = sdk.instructionLoader.setExecutor(
-      bufferAccount,
-      expectedExecutor
-    );
-    await expectTXTable(tx, "set the buffer's executer").to.be.fulfilled;
-    const bufferData = await sdk.instructionLoader.loadBufferData(
-      bufferAccount
-    );
-    expect(bufferData.executor).to.be.eqAddress(expectedExecutor);
-  });
-
   it("Test write and execute instruction", async () => {
     const newAccountKP = Keypair.generate();
     const ix = SystemProgram.createAccount({
