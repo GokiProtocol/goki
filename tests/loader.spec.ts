@@ -1,5 +1,12 @@
 import { expectTX, expectTXTable } from "@saberhq/chai-solana";
+import {
+  createMemoInstruction,
+  MEMO_PROGRAM_ID,
+  TransactionEnvelope,
+} from "@saberhq/solana-contrib";
+import { MintLayout, SPLToken, TOKEN_PROGRAM_ID } from "@saberhq/token-utils";
 import type { PublicKey } from "@solana/web3.js";
+import { Keypair, SystemProgram } from "@solana/web3.js";
 import { PACKET_DATA_SIZE } from "@solana/web3.js";
 import { BN } from "bn.js";
 import { expect } from "chai";
@@ -47,86 +54,104 @@ describe("instruction loader", () => {
     expect(bufferData.smartWallet).to.eqAddress(smartWalletW.key);
   });
 
-  // it("Test write and execute instruction", async () => {
-  //   const newAccountKP = Keypair.generate();
-  //   const ix = SystemProgram.createAccount({
-  //     fromPubkey: sdk.provider.wallet.publicKey,
-  //     newAccountPubkey: newAccountKP.publicKey,
-  //     space: MintLayout.span,
-  //     lamports: await SPLToken.getMinBalanceRentForExemptMint(
-  //       sdk.provider.connection
-  //     ),
-  //     programId: TOKEN_PROGRAM_ID,
-  //   });
-  //   const writeTx = sdk.instructionLoader.writeInstruction(ix, bufferAccount);
-  //   await expectTXTable(writeTx, "write memo instruction to buffer").to.be
-  //     .fulfilled;
-  //   const execTx = sdk.instructionLoader.executeInstruction(bufferAccount, [
-  //     {
-  //       pubkey: SystemProgram.programId,
-  //       isSigner: false,
-  //       isWritable: false,
-  //     },
-  //     {
-  //       pubkey: sdk.provider.wallet.publicKey,
-  //       isSigner: true,
-  //       isWritable: true,
-  //     },
-  //     {
-  //       pubkey: newAccountKP.publicKey,
-  //       isSigner: true,
-  //       isWritable: true,
-  //     },
-  //   ]);
-  //   execTx.addSigners(newAccountKP);
-  //   await expectTXTable(execTx, "execute memo instruction off buffer").to.be
-  //     .fulfilled;
-  //   const newAccountInfo = await sdk.provider.getAccountInfo(
-  //     newAccountKP.publicKey
-  //   );
-  //   expect(newAccountInfo?.accountInfo.owner).to.eqAddress(TOKEN_PROGRAM_ID);
+  it("Test write and execute instruction", async () => {
+    const newAccountKP = Keypair.generate();
+    const ix = SystemProgram.createAccount({
+      fromPubkey: sdk.provider.wallet.publicKey,
+      newAccountPubkey: newAccountKP.publicKey,
+      space: MintLayout.span,
+      lamports: await SPLToken.getMinBalanceRentForExemptMint(
+        sdk.provider.connection
+      ),
+      programId: TOKEN_PROGRAM_ID,
+    });
+    const writeTx = await sdk.instructionLoader.writeInstruction(
+      ix,
+      bufferAccount
+    );
+    await expectTXTable(writeTx, "write memo instruction to buffer").to.be
+      .fulfilled;
 
-  //   const bufferData = await sdk.instructionLoader.loadBufferData(
-  //     bufferAccount
-  //   );
-  //   expect(bufferData.execCount).to.be.eq(1);
-  // });
+    const finalizeTx = await sdk.instructionLoader.finalizeBuffer(
+      bufferAccount
+    );
+    const execTx = await sdk.instructionLoader.executeInstruction(
+      bufferAccount,
+      [
+        {
+          pubkey: SystemProgram.programId,
+          isSigner: false,
+          isWritable: false,
+        },
+        {
+          pubkey: sdk.provider.wallet.publicKey,
+          isSigner: true,
+          isWritable: true,
+        },
+        {
+          pubkey: newAccountKP.publicKey,
+          isSigner: true,
+          isWritable: true,
+        },
+      ]
+    );
+    execTx.addSigners(newAccountKP);
+    await expectTXTable(
+      finalizeTx.combine(execTx),
+      "execute memo instruction off buffer"
+    ).to.be.fulfilled;
+    const newAccountInfo = await sdk.provider.getAccountInfo(
+      newAccountKP.publicKey
+    );
+    expect(newAccountInfo?.accountInfo.owner).to.eqAddress(TOKEN_PROGRAM_ID);
 
-  // it("Test write and execute multiple instructions", async () => {
-  //   const signers = new Array(3).fill(null).map(() => Keypair.generate());
-  //   const writeTXs = signers.map((s) =>
-  //     sdk.instructionLoader.writeInstruction(
-  //       createMemoInstruction("test", [s.publicKey]),
-  //       bufferAccount
-  //     )
-  //   );
-  //   const writeTx = TransactionEnvelope.combineAll(...writeTXs);
-  //   await expectTXTable(writeTx, "write memo instructions to buffer").to.be
-  //     .fulfilled;
+    const bufferData = await sdk.instructionLoader.loadBufferData(
+      bufferAccount
+    );
+    expect(bufferData.execCount).to.be.eq(1);
+  });
 
-  //   const executeTXs = signers.map((s) => {
-  //     const tx = sdk.instructionLoader.executeInstruction(bufferAccount, [
-  //       {
-  //         pubkey: MEMO_PROGRAM_ID,
-  //         isSigner: false,
-  //         isWritable: false,
-  //       },
-  //       {
-  //         pubkey: s.publicKey,
-  //         isSigner: true,
-  //         isWritable: false,
-  //       },
-  //     ]);
-  //     tx.addSigners(s);
-  //     return tx;
-  //   });
-  //   const execTx = TransactionEnvelope.combineAll(...executeTXs);
-  //   await expectTXTable(execTx, "execute memo instructions off buffer").to.be
-  //     .fulfilled;
+  it("Test write and execute multiple instructions", async () => {
+    const signers = new Array(3).fill(null).map(() => Keypair.generate());
+    const writeTXs = await Promise.all(
+      signers.map(
+        async (s) =>
+          await sdk.instructionLoader.writeInstruction(
+            createMemoInstruction("test", [s.publicKey]),
+            bufferAccount
+          )
+      )
+    );
+    const writeTx = TransactionEnvelope.combineAll(...writeTXs);
+    await expectTXTable(writeTx, "write memo instructions to buffer").to.be
+      .fulfilled;
 
-  //   const bufferData = await sdk.instructionLoader.loadBufferData(
-  //     bufferAccount
-  //   );
-  //   expect(bufferData.execCount).to.be.eq(3);
-  // });
+    const executeTXs = signers.map(async (s) => {
+      const tx = await sdk.instructionLoader.executeInstruction(bufferAccount, [
+        {
+          pubkey: MEMO_PROGRAM_ID,
+          isSigner: false,
+          isWritable: false,
+        },
+        {
+          pubkey: s.publicKey,
+          isSigner: true,
+          isWritable: false,
+        },
+      ]);
+      tx.addSigners(s);
+      return tx;
+    });
+    const execTx = await TransactionEnvelope.combineAllAsync(
+      sdk.instructionLoader.finalizeBuffer(bufferAccount),
+      ...executeTXs
+    );
+    await expectTXTable(execTx, "execute memo instructions off buffer").to.be
+      .fulfilled;
+
+    const bufferData = await sdk.instructionLoader.loadBufferData(
+      bufferAccount
+    );
+    expect(bufferData.execCount).to.be.eq(3);
+  });
 });

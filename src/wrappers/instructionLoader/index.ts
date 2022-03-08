@@ -117,8 +117,8 @@ export class InstructionLoaderWrapper {
    * Write an instruction to the buffer.
    */
   async writeInstruction(
-    buffer: PublicKey,
     ix: TransactionInstruction,
+    buffer: PublicKey,
     writer: PublicKey = this.sdk.provider.wallet.publicKey
   ): Promise<TransactionEnvelope> {
     const bufferData = await this.loadBufferData(buffer);
