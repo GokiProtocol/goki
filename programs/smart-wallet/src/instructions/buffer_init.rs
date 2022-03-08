@@ -38,7 +38,7 @@ pub fn handle(ctx: Context<InitBuffer>, bump: u8, eta: i64) -> Result<()> {
         bump,
         eta,
         ctx.accounts.proposer.key(),
-        &[].to_vec(),
+        &[],
         &mut ctx.accounts.smart_wallet,
         &mut ctx.accounts.transaction,
     )?;

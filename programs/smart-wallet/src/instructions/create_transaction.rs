@@ -52,7 +52,7 @@ pub fn handler(
     bump: u8,
     eta: i64,
     proposer: Pubkey,
-    instructions: &Vec<TXInstruction>,
+    instructions: &[TXInstruction],
     smart_wallet: &mut Account<SmartWallet>,
     tx: &mut Account<Transaction>,
 ) -> Result<()> {
@@ -88,7 +88,7 @@ pub fn handler(
     tx.bump = bump;
 
     tx.proposer = proposer;
-    tx.instructions = instructions.clone();
+    tx.instructions = instructions.to_vec();
     tx.signers = signers;
     tx.owner_set_seqno = smart_wallet.owner_set_seqno;
     tx.eta = eta;
@@ -99,7 +99,7 @@ pub fn handler(
     emit!(TransactionCreateEvent {
         smart_wallet: smart_wallet.key(),
         transaction: tx.key(),
-        proposer: proposer,
+        proposer,
         instructions: instructions.to_vec(),
         eta,
         timestamp: Clock::get()?.unix_timestamp
