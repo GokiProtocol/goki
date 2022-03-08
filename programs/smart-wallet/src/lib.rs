@@ -501,4 +501,6 @@ pub enum ErrorCode {
     OwnerSetChanged,
     #[msg("Subaccount does not belong to smart wallet.")]
     SubaccountOwnerMismatch,
+    #[msg("Instruction buffer has not been finalized.")]
+    BufferNotFinalized,
 }

@@ -6,8 +6,7 @@ import {
 } from "@saberhq/solana-contrib";
 import { MintLayout, SPLToken, TOKEN_PROGRAM_ID } from "@saberhq/token-utils";
 import type { PublicKey } from "@solana/web3.js";
-import { Keypair, SystemProgram } from "@solana/web3.js";
-import { PACKET_DATA_SIZE } from "@solana/web3.js";
+import { Keypair, PACKET_DATA_SIZE, SystemProgram } from "@solana/web3.js";
 import { BN } from "bn.js";
 import { expect } from "chai";
 
@@ -153,5 +152,35 @@ describe("instruction loader", () => {
       bufferAccount
     );
     expect(bufferData.execCount).to.be.eq(3);
+  });
+
+  it("Cannot execute on unfalized buffer", async () => {
+    const writeTx = await sdk.instructionLoader.writeInstruction(
+      createMemoInstruction("test", [sdk.provider.wallet.publicKey]),
+      bufferAccount
+    );
+    await expectTXTable(writeTx, "write memo instruction to buffer").to.be
+      .fulfilled;
+
+    const execTx = await sdk.instructionLoader.executeInstruction(
+      bufferAccount,
+      [
+        {
+          pubkey: MEMO_PROGRAM_ID,
+          isSigner: false,
+          isWritable: false,
+        },
+        {
+          pubkey: sdk.provider.wallet.publicKey,
+          isSigner: true,
+          isWritable: false,
+        },
+      ]
+    );
+
+    await expectTX(
+      execTx,
+      "cannot execute on unfinalized buffer"
+    ).to.be.rejectedWith("0x177a");
   });
 });
