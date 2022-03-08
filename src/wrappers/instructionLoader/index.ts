@@ -70,6 +70,26 @@ export class InstructionLoaderWrapper {
   }
 
   /**
+   * Finalize an instruction buffer.
+   */
+  async finalizeBuffer(
+    buffer: PublicKey,
+    owner: PublicKey = this.sdk.provider.wallet.publicKey
+  ): Promise<TransactionEnvelope> {
+    const bufferData = await this.loadBufferData(buffer);
+    return new TransactionEnvelope(this.sdk.provider, [
+      this.program.instruction.finalizeBuffer({
+        accounts: {
+          buffer,
+          smartWallet: bufferData.smartWallet,
+          transaction: bufferData.transaction,
+          owner,
+        },
+      }),
+    ]);
+  }
+
+  /**
    * Executes an instruction from the buffer.
    */
   async executeInstruction(
