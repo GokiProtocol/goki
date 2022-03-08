@@ -5,6 +5,7 @@ import type {
   TransactionInstruction,
 } from "@solana/web3.js";
 import { Keypair, SystemProgram } from "@solana/web3.js";
+import BN from "bn.js";
 
 import type { SmartWalletProgram } from "../../programs";
 import type { InstructionBufferData } from "../../programs/smartWallet";
@@ -35,6 +36,7 @@ export class InstructionLoaderWrapper {
   async initBuffer(
     bufferSize: number,
     smartWallet: PublicKey,
+    eta: BN = new BN(-1),
     proposer: PublicKey = this.sdk.provider.wallet.publicKey,
     writer: PublicKey = this.sdk.provider.wallet.publicKey,
     txAccount: Keypair = Keypair.generate()
@@ -47,7 +49,7 @@ export class InstructionLoaderWrapper {
           txAccount,
           this.program.account.transaction.size + bufferSize
         ),
-        this.program.instruction.initBuffer({
+        this.program.instruction.initBuffer(eta, {
           accounts: {
             buffer,
             proposer,

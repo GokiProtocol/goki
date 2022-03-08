@@ -1,5 +1,34 @@
 use crate::*;
 
+/// Accounts for [smart_wallet::create_transaction].
+#[derive(Accounts)]
+#[instruction(bump: u8, instructions: Vec<TXInstruction>)]
+pub struct CreateTransaction<'info> {
+    /// The [SmartWallet].
+    #[account(mut)]
+    pub smart_wallet: Account<'info, SmartWallet>,
+    /// The [Transaction].
+    #[account(
+        init,
+        seeds = [
+            b"GokiTransaction".as_ref(),
+            smart_wallet.key().to_bytes().as_ref(),
+            smart_wallet.num_transactions.to_le_bytes().as_ref()
+        ],
+        bump,
+        payer = payer,
+        space = Transaction::space(instructions),
+    )]
+    pub transaction: Account<'info, Transaction>,
+    /// One of the owners. Checked in the handler via [SmartWallet::owner_index].
+    pub proposer: Signer<'info>,
+    /// Payer to create the [Transaction].
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    /// The [System] program.
+    pub system_program: Program<'info, System>,
+}
+
 /// Emitted when a [Transaction] is proposed.
 #[event]
 pub struct TransactionCreateEvent {
