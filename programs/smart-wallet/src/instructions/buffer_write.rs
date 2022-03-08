@@ -36,7 +36,7 @@ pub fn handler(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
 
 impl<'info> Validate<'info> for WriteBuffer<'info> {
     fn validate(&self) -> Result<()> {
-        invariant!(!self.buffer.ready);
+        invariant!(self.buffer.finalized_at == 0);
         assert_keys_eq!(self.writer.key(), self.buffer.writer);
         assert_keys_eq!(self.transaction.key(), self.buffer.transaction);
 

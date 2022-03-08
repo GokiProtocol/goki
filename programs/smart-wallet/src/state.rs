@@ -198,10 +198,10 @@ pub struct SubaccountInfo {
 #[account]
 #[derive(Default, Debug, PartialEq)]
 pub struct InstructionBuffer {
-    /// Flag denoting if buffer is ready to be executed.
-    pub ready: bool,
     /// Execution count on this buffer.
     pub exec_count: u8,
+    /// Time denoting when buffer is ready to be executed.
+    pub finalized_at: i64,
     /// Role that can write to the buffer.
     pub writer: Pubkey,
     /// Transaction container to hold instructions.

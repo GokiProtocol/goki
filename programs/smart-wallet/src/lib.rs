@@ -395,6 +395,11 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
+    pub fn finalize_buffer(ctx: Context<FinalizeBuffer>) -> Result<()> {
+        instructions::buffer_finalize::handle(ctx)
+    }
+
+    #[access_control(ctx.accounts.validate())]
     pub fn execute_on_buffer<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>,
     ) -> Result<()> {
@@ -569,6 +574,4 @@ pub enum ErrorCode {
     OwnerSetChanged,
     #[msg("Subaccount does not belong to smart wallet.")]
     SubaccountOwnerMismatch,
-    #[msg("Invlaid buffer role.")]
-    InvalidBufferRole,
 }

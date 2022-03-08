@@ -48,7 +48,7 @@ pub fn handle<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Resul
 impl<'info> Validate<'info> for ExecuteIx<'info> {
     fn validate(&self) -> Result<()> {
         assert_keys_eq!(self.buffer.transaction, self.transaction);
-        invariant!(self.buffer.ready);
+        invariant!(self.buffer.finalized_at > 0);
         invariant!(self.buffer.exec_count < self.transaction.instructions.len() as u8);
 
         assert_keys_eq!(
