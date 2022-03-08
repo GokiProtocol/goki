@@ -33,10 +33,20 @@ pub struct InitBufferEvent {
     pub writer: Pubkey,
 }
 
-pub fn handle(ctx: Context<InitBuffer>) -> Result<()> {
+pub fn handle(ctx: Context<InitBuffer>, bump: u8, eta: i64) -> Result<()> {
+    create_transaction::handler(
+        bump,
+        eta,
+        ctx.accounts.proposer.key(),
+        &[].to_vec(),
+        &mut ctx.accounts.smart_wallet,
+        &mut ctx.accounts.transaction,
+    )?;
+
     let buffer = &mut ctx.accounts.buffer;
     buffer.writer = ctx.accounts.writer.key();
     buffer.transaction = ctx.accounts.transaction.key();
+    buffer.smart_wallet = ctx.accounts.smart_wallet.key();
 
     emit!(InitBufferEvent {
         buffer: buffer.key(),

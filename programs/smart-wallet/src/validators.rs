@@ -18,13 +18,6 @@ impl<'info> Validate<'info> for Auth<'info> {
     }
 }
 
-impl<'info> Validate<'info> for CreateTransaction<'info> {
-    fn validate(&self) -> Result<()> {
-        // owner_index check happens later
-        Ok(())
-    }
-}
-
 impl<'info> Validate<'info> for Approve<'info> {
     fn validate(&self) -> Result<()> {
         assert_keys_eq!(

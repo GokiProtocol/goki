@@ -150,58 +150,14 @@ pub mod smart_wallet {
         instructions: Vec<TXInstruction>,
         eta: i64,
     ) -> Result<()> {
-        let smart_wallet = &ctx.accounts.smart_wallet;
-        let owner_index = smart_wallet.owner_index(ctx.accounts.proposer.key())?;
-
-        let clock = Clock::get()?;
-        let current_ts = clock.unix_timestamp;
-        if smart_wallet.minimum_delay != 0 {
-            invariant!(
-                eta >= unwrap_int!(current_ts.checked_add(smart_wallet.minimum_delay as i64)),
-                InvalidETA
-            );
-        }
-        if eta != NO_ETA {
-            invariant!(eta >= 0, "ETA must be positive");
-            let delay = unwrap_int!(eta.checked_sub(current_ts));
-            invariant!(delay >= 0, "ETA must be in the future");
-            invariant!(delay <= MAX_DELAY_SECONDS, DelayTooHigh);
-        }
-
-        // generate the signers boolean list
-        let owners = &smart_wallet.owners;
-        let mut signers = Vec::new();
-        signers.resize(owners.len(), false);
-        signers[owner_index] = true;
-
-        let index = smart_wallet.num_transactions;
-        let smart_wallet = &mut ctx.accounts.smart_wallet;
-        smart_wallet.num_transactions = unwrap_int!(smart_wallet.num_transactions.checked_add(1));
-
-        // init the TX
-        let tx = &mut ctx.accounts.transaction;
-        tx.smart_wallet = smart_wallet.key();
-        tx.index = index;
-        tx.bump = *unwrap_int!(ctx.bumps.get("transaction"));
-
-        tx.proposer = ctx.accounts.proposer.key();
-        tx.instructions = instructions.clone();
-        tx.signers = signers;
-        tx.owner_set_seqno = smart_wallet.owner_set_seqno;
-        tx.eta = eta;
-
-        tx.executor = Pubkey::default();
-        tx.executed_at = -1;
-
-        emit!(TransactionCreateEvent {
-            smart_wallet: ctx.accounts.smart_wallet.key(),
-            transaction: ctx.accounts.transaction.key(),
-            proposer: ctx.accounts.proposer.key(),
-            instructions,
+        create_transaction::handler(
+            *unwrap_int!(ctx.bumps.get("transaction")),
             eta,
-            timestamp: Clock::get()?.unix_timestamp
-        });
-        Ok(())
+            ctx.accounts.proposer.key(),
+            &instructions,
+            &mut ctx.accounts.smart_wallet,
+            &mut ctx.accounts.transaction,
+        )
     }
 
     /// Approves a transaction on behalf of an owner of the smart_wallet.
@@ -390,8 +346,8 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn init_buffer(ctx: Context<InitBuffer>) -> Result<()> {
-        instructions::buffer_init::handle(ctx)
+    pub fn init_buffer(ctx: Context<InitBuffer>, bump: u8, eta: i64) -> Result<()> {
+        instructions::buffer_init::handle(ctx, bump, eta)
     }
 
     #[access_control(ctx.accounts.validate())]

@@ -43,25 +43,6 @@ pub struct WalletChangeThresholdEvent {
     pub timestamp: i64,
 }
 
-/// Emitted when a [Transaction] is proposed.
-#[event]
-pub struct TransactionCreateEvent {
-    /// The [SmartWallet].
-    #[index]
-    pub smart_wallet: Pubkey,
-    /// The [Transaction].
-    #[index]
-    pub transaction: Pubkey,
-    /// The owner which proposed the transaction.
-    pub proposer: Pubkey,
-    /// Instructions associated with the [Transaction].
-    pub instructions: Vec<TXInstruction>,
-    /// The [Transaction::eta].
-    pub eta: i64,
-    /// The Unix timestamp when the event was emitted.
-    pub timestamp: i64,
-}
-
 /// Emitted when a [Transaction] is approved.
 #[event]
 pub struct TransactionApproveEvent {
