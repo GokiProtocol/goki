@@ -4,7 +4,7 @@ use crate::*;
 
 #[derive(Accounts)]
 pub struct InitBuffer<'info> {
-    #[account(init, seeds = [b"GokiBuffer", transaction.key.as_ref()], bump, payer = payer)]
+    #[account(init, seeds = [b"GokiBuffer".as_ref(), transaction.key.as_ref()], bump, payer = payer)]
     pub buffer: Account<'info, InstructionBuffer>,
     /// The [SmartWallet].
     #[account(mut)]

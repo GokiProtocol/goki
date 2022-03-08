@@ -398,7 +398,7 @@ pub mod smart_wallet {
     pub fn execute_on_buffer<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>,
     ) -> Result<()> {
-        instructions::buffer_execute::handle_with_invoker(ctx)
+        instructions::buffer_execute::handle(ctx)
     }
 
     #[access_control(ctx.accounts.validate())]
