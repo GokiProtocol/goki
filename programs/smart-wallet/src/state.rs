@@ -198,14 +198,12 @@ pub struct SubaccountInfo {
 #[account]
 #[derive(Default, Debug, PartialEq)]
 pub struct InstructionBuffer {
+    /// Flag denoting if buffer is ready to be executed.
+    pub ready: bool,
     /// Execution count on this buffer.
     pub exec_count: u8,
-    /// Admin on the buffer to set roles.
-    pub admin: Pubkey,
-    /// Role that can execute instructions off the buffer.
-    pub executor: Pubkey,
     /// Role that can write to the buffer.
     pub writer: Pubkey,
-    /// Staged instructions to be executed.
-    pub staged_tx_instructions: Vec<TXInstruction>,
+    /// Transaction container to hold instructions.
+    pub transaction: Pubkey,
 }

@@ -1,10 +1,12 @@
 import { TransactionEnvelope } from "@saberhq/solana-contrib";
+import { u64 } from "@saberhq/token-utils";
 import type {
   AccountMeta,
   PublicKey,
   TransactionInstruction,
 } from "@solana/web3.js";
 import { Keypair } from "@solana/web3.js";
+import { findOwnerInvokerAddress } from "..";
 
 import type { SmartWalletProgram } from "../../programs";
 import type { InstructionBufferData } from "../../programs/smartWallet";
@@ -76,12 +78,19 @@ export class InstructionLoaderWrapper {
   /**
    * Executes an instruction from the buffer.
    */
-  executeInstruction(
+  async executeInstruction(
+    invokerIndex: number,
+    smartWallet: PublicKey,
     bufferAccount: PublicKey,
+    executor: PublicKey,
     accountMetas: AccountMeta[]
-  ): TransactionEnvelope {
+  ): Promise<TransactionEnvelope> {
+    const [ownerInvoker, bump] = await findOwnerInvokerAddress(
+      smartWallet,
+      invokerIndex
+    );
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.executeIx({
+      this.program.instruction.executeIxWithInvoker(index, bump, smartWallet, {
         accounts: {
           buffer: bufferAccount,
         },

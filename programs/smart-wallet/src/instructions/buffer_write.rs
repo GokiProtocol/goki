@@ -3,9 +3,10 @@
 use crate::*;
 
 #[derive(Accounts)]
-pub struct WriteIx<'info> {
+pub struct WriteBuffer<'info> {
+    pub buffer: Account<'info, InstructionBuffer>,
     #[account(mut)]
-    pub buffer: Box<Account<'info, InstructionBuffer>>,
+    pub transaction: Box<Account<'info, Transaction>>,
     pub writer: Signer<'info>,
 }
 
@@ -16,27 +17,28 @@ pub struct WriteIxEvent {
     pub buffer: Pubkey,
     /// The [InstructionBuffer::writer].
     pub writer: Pubkey,
-    /// The program id of the instruction written.
-    pub program_id: Pubkey,
+    /// Transaction written to.
+    pub transaction: Pubkey,
 }
 
-pub fn handler(ctx: Context<WriteIx>, ix: TXInstruction) -> Result<()> {
-    let buffer = &mut ctx.accounts.buffer;
+pub fn handler(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
+    ctx.accounts.transaction.instructions.push(ix);
 
+    let buffer = &ctx.accounts.buffer;
     emit!(WriteIxEvent {
         buffer: buffer.key(),
         writer: buffer.writer,
-        program_id: ix.program_id
+        transaction: buffer.transaction,
     });
-
-    buffer.staged_tx_instructions.push(ix);
 
     Ok(())
 }
 
-impl<'info> Validate<'info> for WriteIx<'info> {
+impl<'info> Validate<'info> for WriteBuffer<'info> {
     fn validate(&self) -> Result<()> {
+        invariant!(!self.buffer.ready);
         assert_keys_eq!(self.writer.key(), self.buffer.writer);
+        assert_keys_eq!(self.transaction.key(), self.buffer.transaction);
 
         Ok(())
     }

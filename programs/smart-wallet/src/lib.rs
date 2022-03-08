@@ -390,33 +390,20 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn init_ix_buffer(ctx: Context<InitIxBuffer>) -> Result<()> {
-        instructions::buffer::handle_init(ctx)
+    pub fn init_buffer(ctx: Context<InitBuffer>) -> Result<()> {
+        instructions::buffer_init::handle(ctx)
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn close_ix_buffer(ctx: Context<CloseIxBuffer>) -> Result<()> {
-        instructions::buffer::handle_close(ctx)
-    }
-
-    #[access_control(ctx.accounts.validate())]
-    pub fn execute_ix_with_invoker<'info>(
+    pub fn execute_on_buffer<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>,
-        index: u64,
-        bump: u8,
-        smart_wallet: Pubkey,
     ) -> Result<()> {
-        instructions::execute_ix::handle_with_invoker(ctx, index, bump, smart_wallet)
+        instructions::buffer_execute::handle_with_invoker(ctx)
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn write_ix(ctx: Context<WriteIx>, ix: TXInstruction) -> Result<()> {
-        instructions::write_ix::handler(ctx, ix)
-    }
-
-    #[access_control(ctx.accounts.validate())]
-    pub fn set_buffer_role(ctx: Context<SetBufferRole>, role: u8, key: Pubkey) -> Result<()> {
-        instructions::buffer::handle_set_role(ctx, role.try_into()?, key)
+    pub fn write_to_buffer(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
+        instructions::buffer_write::handler(ctx, ix)
     }
 }
 
