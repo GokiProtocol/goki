@@ -1,17 +1,16 @@
 import { TransactionEnvelope } from "@saberhq/solana-contrib";
-import { u64 } from "@saberhq/token-utils";
 import type {
   AccountMeta,
   PublicKey,
   TransactionInstruction,
 } from "@solana/web3.js";
-import { Keypair } from "@solana/web3.js";
-import { findOwnerInvokerAddress } from "..";
+import { Keypair, SystemProgram } from "@solana/web3.js";
 
 import type { SmartWalletProgram } from "../../programs";
 import type { InstructionBufferData } from "../../programs/smartWallet";
 import type { GokiSDK } from "../../sdk";
-import type { BufferRole, PendingBuffer } from "./types";
+import { findBufferAddress } from "../smartWallet/pda";
+import type { PendingBuffer } from "./types";
 
 export class InstructionLoaderWrapper {
   readonly program: SmartWalletProgram;
@@ -35,64 +34,57 @@ export class InstructionLoaderWrapper {
    */
   async initBuffer(
     bufferSize: number,
-    admin: PublicKey = this.sdk.provider.wallet.publicKey,
-    bufferAccount: Keypair = Keypair.generate()
+    smartWallet: PublicKey,
+    proposer: PublicKey = this.sdk.provider.wallet.publicKey,
+    writer: PublicKey = this.sdk.provider.wallet.publicKey,
+    txAccount: Keypair = Keypair.generate()
   ): Promise<PendingBuffer> {
+    const [buffer] = await findBufferAddress(txAccount.publicKey);
     const tx = new TransactionEnvelope(
       this.sdk.provider,
       [
         await this.program.account.instructionBuffer.createInstruction(
-          bufferAccount,
-          this.program.account.instructionBuffer.size + bufferSize
+          txAccount,
+          this.program.account.transaction.size + bufferSize
         ),
-        this.program.instruction.initIxBuffer({
+        this.program.instruction.initBuffer({
           accounts: {
-            buffer: bufferAccount.publicKey,
-            admin,
+            buffer,
+            proposer,
+            smartWallet,
+            transaction: txAccount.publicKey,
+            writer,
+            payer: this.sdk.provider.wallet.publicKey,
+            systemProgram: SystemProgram.programId,
           },
         }),
       ],
-      [bufferAccount]
+      [txAccount]
     );
 
     return {
       tx,
-      bufferAccount: bufferAccount.publicKey,
+      buffer,
+      txAccount: txAccount.publicKey,
     };
-  }
-
-  closeBuffer(
-    bufferAccount: PublicKey,
-    writer: PublicKey = this.sdk.provider.wallet.publicKey
-  ): TransactionEnvelope {
-    return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.closeIxBuffer({
-        accounts: {
-          buffer: bufferAccount,
-          writer,
-        },
-      }),
-    ]);
   }
 
   /**
    * Executes an instruction from the buffer.
    */
   async executeInstruction(
-    invokerIndex: number,
-    smartWallet: PublicKey,
-    bufferAccount: PublicKey,
-    executor: PublicKey,
-    accountMetas: AccountMeta[]
+    buffer: PublicKey,
+    accountMetas: AccountMeta[],
+    owner: PublicKey = this.sdk.provider.wallet.publicKey
   ): Promise<TransactionEnvelope> {
-    const [ownerInvoker, bump] = await findOwnerInvokerAddress(
-      smartWallet,
-      invokerIndex
-    );
+    const bufferData = await this.loadBufferData(buffer);
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.executeIxWithInvoker(index, bump, smartWallet, {
+      this.program.instruction.executeFromBuffer({
         accounts: {
-          buffer: bufferAccount,
+          buffer,
+          smartWallet: bufferData.smartWallet,
+          transaction: bufferData.transaction,
+          owner,
         },
         remainingAccounts: accountMetas,
       }),
@@ -102,35 +94,18 @@ export class InstructionLoaderWrapper {
   /**
    * Write an instruction to the buffer.
    */
-  writeInstruction(
+  async writeInstruction(
+    buffer: PublicKey,
     ix: TransactionInstruction,
-    bufferAccount: PublicKey,
     writer: PublicKey = this.sdk.provider.wallet.publicKey
-  ): TransactionEnvelope {
+  ): Promise<TransactionEnvelope> {
+    const bufferData = await this.loadBufferData(buffer);
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.writeIx(ix, {
+      this.program.instruction.writeToBuffer(ix, {
         accounts: {
-          buffer: bufferAccount,
+          transaction: bufferData.transaction,
+          buffer,
           writer,
-        },
-      }),
-    ]);
-  }
-
-  /**
-   * Set the executor for the instruction buffer.
-   */
-  setExecutor(
-    bufferAccount: PublicKey,
-    role: BufferRole,
-    roleKey: PublicKey,
-    admin: PublicKey = this.sdk.provider.wallet.publicKey
-  ): TransactionEnvelope {
-    return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.setBufferRole(role, roleKey, {
-        accounts: {
-          buffer: bufferAccount,
-          admin,
         },
       }),
     ]);

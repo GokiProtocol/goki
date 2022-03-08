@@ -400,7 +400,7 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn execute_on_buffer<'info>(
+    pub fn execute_from_buffer<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>,
     ) -> Result<()> {
         instructions::buffer_execute::handle(ctx)

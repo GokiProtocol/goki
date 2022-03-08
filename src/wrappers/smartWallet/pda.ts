@@ -81,3 +81,15 @@ export const findSubaccountInfoAddress = async (
     GOKI_ADDRESSES.SmartWallet
   );
 };
+
+/**
+ * Finds the account of the buffer metadata for an instruction.
+ */
+export const findBufferAddress = async (
+  txKey: PublicKey
+): Promise<[PublicKey, number]> => {
+  return await PublicKey.findProgramAddress(
+    [utils.bytes.utf8.encode("GokiBuffer"), txKey.toBuffer()],
+    GOKI_ADDRESSES.SmartWallet
+  );
+};

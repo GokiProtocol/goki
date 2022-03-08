@@ -206,4 +206,6 @@ pub struct InstructionBuffer {
     pub writer: Pubkey,
     /// Transaction container to hold instructions.
     pub transaction: Pubkey,
+    /// Smart wallet the transaction belongs to.
+    pub smart_wallet: Pubkey,
 }
