@@ -1,20 +1,20 @@
-//! Init or close an [InstructionBuffer].
+//! Init or close an [InstructionLoader].
 
 use crate::*;
 
 #[derive(Accounts)]
 pub struct FinalizeBuffer<'info> {
     #[account(mut)]
-    pub buffer: Account<'info, InstructionBuffer>,
+    pub buffer: Account<'info, InstructionLoader>,
     pub writer: Signer<'info>,
 }
 
-/// Emitted when a [InstructionBuffer] is initialized.
+/// Emitted when a [InstructionLoader] is initialized.
 #[event]
 pub struct FinalizeBufferEvent {
     /// The buffer.
     pub buffer: Pubkey,
-    /// The time [InstructionBuffer] is finalized.
+    /// The time [InstructionLoader] is finalized.
     #[index]
     pub time: i64,
 }

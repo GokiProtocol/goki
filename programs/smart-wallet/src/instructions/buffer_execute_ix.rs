@@ -1,4 +1,4 @@
-//! Executes an instruction off of the [InstructionBuffer].
+//! Executes an instruction off of the [InstructionLoader].
 
 use anchor_lang::solana_program::program::invoke_signed;
 use num_traits::ToPrimitive;
@@ -8,10 +8,10 @@ use crate::*;
 #[derive(Accounts)]
 pub struct ExecuteBufferIX<'info> {
     #[account(mut)]
-    pub buffer: Account<'info, InstructionBuffer>,
+    pub buffer: Account<'info, InstructionLoader>,
     /// The buffer's [SmartWallet]
     pub smart_wallet: Account<'info, SmartWallet>,
-    /// The [InstructionBuffer::executer].
+    /// The [InstructionLoader::executer].
     pub executor: Signer<'info>,
 }
 
