@@ -405,14 +405,14 @@ pub mod smart_wallet {
     // }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn execute_ix<'info>(
+    pub fn execute_buffer_ix<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecuteBufferIX<'info>>,
     ) -> Result<()> {
         instructions::buffer_execute_ix::handler(ctx)
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn write_ix(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
+    pub fn write_buffer(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
         instructions::buffer_write::handler(ctx, ix)
     }
 

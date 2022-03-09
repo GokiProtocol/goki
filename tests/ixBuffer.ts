@@ -32,7 +32,7 @@ describe("instruction loader", () => {
   });
 
   beforeEach(async () => {
-    const { buffer, txAccount, tx } = await sdk.instructionLoader.initBuffer(
+    const { buffer, txAccount, tx } = await sdk.instructionBuffer.initBuffer(
       BUFFER_SIZE,
       smartWalletW.key
     );
@@ -43,7 +43,7 @@ describe("instruction loader", () => {
   });
 
   it("Buffer was initialized", async () => {
-    const bufferData = await sdk.instructionLoader.loadBufferData(
+    const bufferData = await sdk.instructionBuffer.loadBufferData(
       bufferAccount
     );
     expect(bufferData.execCount).to.eql(0);
@@ -64,17 +64,17 @@ describe("instruction loader", () => {
       ),
       programId: TOKEN_PROGRAM_ID,
     });
-    const writeTx = await sdk.instructionLoader.writeInstruction(
+    const writeTx = await sdk.instructionBuffer.writeInstruction(
       ix,
       bufferAccount
     );
     await expectTXTable(writeTx, "write memo instruction to buffer").to.be
       .fulfilled;
 
-    const finalizeTx = await sdk.instructionLoader.finalizeBuffer(
+    const finalizeTx = await sdk.instructionBuffer.finalizeBuffer(
       bufferAccount
     );
-    const execTx = await sdk.instructionLoader.executeInstruction(
+    const execTx = await sdk.instructionBuffer.executeInstruction(
       bufferAccount,
       [
         {

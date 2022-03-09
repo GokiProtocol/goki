@@ -32,10 +32,10 @@ export class GokiSDK {
   ) {}
 
   /**
-   * Wrapper for the instruction loader.
+   * Wrapper for the instruction buffer.
    */
-  get instructionLoader(): InstructionLoaderWrapper {
-    return new InstructionLoaderWrapper(this);
+  get instructionBuffer(): InstructionBufferWrapper {
+    return new InstructionBufferWrapper(this);
   }
 
   /**

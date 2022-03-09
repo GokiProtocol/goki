@@ -4,16 +4,15 @@ import type {
   PublicKey,
   TransactionInstruction,
 } from "@solana/web3.js";
-import { Keypair, SystemProgram } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import BN from "bn.js";
 
 import type { SmartWalletProgram } from "../../programs";
 import type { InstructionBufferData } from "../../programs/smartWallet";
 import type { GokiSDK } from "../../sdk";
-import { findBufferAddress } from "../smartWallet/pda";
 import type { PendingBuffer } from "./types";
 
-export class InstructionLoaderWrapper {
+export class InstructionBufferWrapper {
   readonly program: SmartWalletProgram;
 
   constructor(readonly sdk: GokiSDK) {
@@ -21,13 +20,11 @@ export class InstructionLoaderWrapper {
   }
 
   /**
-   * loadBufferData
+   * loadData
    * @returns
    */
-  async loadBufferData(
-    bufferAccount: PublicKey
-  ): Promise<InstructionBufferData> {
-    return await this.program.account.instructionBuffer.fetch(bufferAccount);
+  async loadData(loaderAccount: PublicKey): Promise<InstructionBufferData> {
+    return await this.program.account.instructionBuffer.fetch(loaderAccount);
   }
 
   /**
@@ -37,55 +34,45 @@ export class InstructionLoaderWrapper {
     bufferSize: number,
     smartWallet: PublicKey,
     eta: BN = new BN(-1),
-    proposer: PublicKey = this.sdk.provider.wallet.publicKey,
+    executer: PublicKey = this.sdk.provider.wallet.publicKey,
     writer: PublicKey = this.sdk.provider.wallet.publicKey,
-    txAccount: Keypair = Keypair.generate()
+    bufferAccount: Keypair = Keypair.generate()
   ): Promise<PendingBuffer> {
-    const [buffer] = await findBufferAddress(txAccount.publicKey);
     const tx = new TransactionEnvelope(
       this.sdk.provider,
       [
         await this.program.account.instructionBuffer.createInstruction(
-          txAccount,
+          bufferAccount,
           this.program.account.transaction.size + bufferSize
         ),
-        this.program.instruction.initBuffer(eta, {
+        this.program.instruction.initIxBuffer(eta, executer, writer, {
           accounts: {
-            buffer,
-            proposer,
             smartWallet,
-            transaction: txAccount.publicKey,
-            writer,
-            payer: this.sdk.provider.wallet.publicKey,
-            systemProgram: SystemProgram.programId,
+            buffer: bufferAccount.publicKey,
           },
         }),
       ],
-      [txAccount]
+      [bufferAccount]
     );
 
     return {
       tx,
-      buffer,
-      txAccount: txAccount.publicKey,
+      bufferAccount: bufferAccount.publicKey,
     };
   }
 
   /**
    * Finalize an instruction buffer.
    */
-  async finalizeBuffer(
+  finalizeBuffer(
     buffer: PublicKey,
-    owner: PublicKey = this.sdk.provider.wallet.publicKey
-  ): Promise<TransactionEnvelope> {
-    const bufferData = await this.loadBufferData(buffer);
+    writer: PublicKey = this.sdk.provider.wallet.publicKey
+  ): TransactionEnvelope {
     return new TransactionEnvelope(this.sdk.provider, [
       this.program.instruction.finalizeBuffer({
         accounts: {
           buffer,
-          smartWallet: bufferData.smartWallet,
-          transaction: bufferData.transaction,
-          owner,
+          writer,
         },
       }),
     ]);
@@ -97,16 +84,15 @@ export class InstructionLoaderWrapper {
   async executeInstruction(
     buffer: PublicKey,
     accountMetas: AccountMeta[],
-    owner: PublicKey = this.sdk.provider.wallet.publicKey
+    executor: PublicKey = this.sdk.provider.wallet.publicKey
   ): Promise<TransactionEnvelope> {
-    const bufferData = await this.loadBufferData(buffer);
+    const bufferData = await this.loadData(buffer);
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.executeFromBuffer({
+      this.program.instruction.executeBufferIx({
         accounts: {
           buffer,
+          executor,
           smartWallet: bufferData.smartWallet,
-          transaction: bufferData.transaction,
-          owner,
         },
         remainingAccounts: accountMetas,
       }),
@@ -116,16 +102,14 @@ export class InstructionLoaderWrapper {
   /**
    * Write an instruction to the buffer.
    */
-  async writeInstruction(
+  writeInstruction(
     ix: TransactionInstruction,
     buffer: PublicKey,
     writer: PublicKey = this.sdk.provider.wallet.publicKey
-  ): Promise<TransactionEnvelope> {
-    const bufferData = await this.loadBufferData(buffer);
+  ): TransactionEnvelope {
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.writeToBuffer(ix, {
+      this.program.instruction.writeBuffer(ix, {
         accounts: {
-          transaction: bufferData.transaction,
           buffer,
           writer,
         },

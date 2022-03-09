@@ -22,7 +22,7 @@ export type SmartWalletTypes = AnchorTypes<
 type Accounts = SmartWalletTypes["Accounts"];
 export type SmartWalletData = Accounts["SmartWallet"];
 export type SmartWalletTransactionData = Accounts["Transaction"];
-export type InstructionBufferData = Accounts["InstructionLoader"];
+export type InstructionBufferData = Accounts["InstructionBuffer"];
 export type SubaccountInfoData = Accounts["SubaccountInfo"];
 
 export type SmartWalletInstruction = Omit<
