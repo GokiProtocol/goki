@@ -1,3 +1,5 @@
+//! Closes an [InstructionBuffer] for execution.
+
 use crate::*;
 
 #[derive(Accounts)]

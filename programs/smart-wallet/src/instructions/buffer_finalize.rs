@@ -1,4 +1,4 @@
-//! Init or close an [InstructionBuffer].
+//! Finalize an [InstructionBuffer] for execution.
 
 use crate::*;
 
@@ -9,7 +9,7 @@ pub struct FinalizeBuffer<'info> {
     pub writer: Signer<'info>,
 }
 
-/// Emitted when a [InstructionBuffer] is initialized.
+/// Emitted when a [InstructionBuffer] is finalized.
 #[event]
 pub struct FinalizeBufferEvent {
     /// The buffer.

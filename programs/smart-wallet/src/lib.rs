@@ -421,6 +421,11 @@ pub mod smart_wallet {
     pub fn finalize_buffer(ctx: Context<FinalizeBuffer>) -> Result<()> {
         instructions::buffer_finalize::handler(ctx)
     }
+
+    #[access_control(ctx.accounts.validate())]
+    pub fn set_buffer_role(ctx: Context<SetBufferRole>, role: u8, role_key: Pubkey) -> Result<()> {
+        instructions::buffer_set_role::handler(ctx, role.into(), role_key)
+    }
 }
 
 /// Accounts for [smart_wallet::create_smart_wallet].
@@ -587,4 +592,6 @@ pub enum ErrorCode {
     SubaccountOwnerMismatch,
     #[msg("Instruction buffer has not been finalized.")]
     BufferNotFinalized,
+    #[msg("Invalid buffer role provided.")]
+    BufferRoleInvalid,
 }
