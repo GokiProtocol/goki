@@ -399,10 +399,10 @@ pub mod smart_wallet {
         instructions::buffer_init::handler(ctx, eta, writer, executer)
     }
 
-    // #[access_control(ctx.accounts.validate())]
-    // pub fn close_ix_buffer(ctx: Context<CloseIxBuffer>) -> Result<()> {
-    //     instructions::buffer::handle_close(ctx)
-    // }
+    #[access_control(ctx.accounts.validate())]
+    pub fn close_ix_buffer(ctx: Context<CloseBuffer>) -> Result<()> {
+        instructions::buffer_close::handler(ctx)
+    }
 
     #[access_control(ctx.accounts.validate())]
     pub fn execute_buffer_ix<'info>(
