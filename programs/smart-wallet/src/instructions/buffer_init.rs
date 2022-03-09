@@ -4,23 +4,9 @@ use crate::*;
 
 #[derive(Accounts)]
 pub struct InitBuffer<'info> {
-    #[account(init, seeds = [b"GokiBuffer".as_ref(), transaction.key.as_ref()], bump, payer = payer)]
-    pub buffer: Account<'info, InstructionBuffer>,
-    /// The [SmartWallet].
-    #[account(mut)]
-    pub smart_wallet: Account<'info, SmartWallet>,
-    /// The [Transaction]
     #[account(zero)]
-    pub transaction: Account<'info, Transaction>,
-    /// One of the owners. Checked in the handler via [SmartWallet::owner_index].
-    pub proposer: Signer<'info>,
-    /// CHECK: Arbitrary account that can write to the buffer.
-    pub writer: UncheckedAccount<'info>,
-    /// Payer to create the [Transaction].
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    /// The [System] program.
-    pub system_program: Program<'info, System>,
+    pub buffer: Account<'info, InstructionBuffer>,
+    pub smart_wallet: Account<'info, SmartWallet>,
 }
 
 /// Emitted when a [InstructionBuffer] is initialized.
@@ -28,29 +14,21 @@ pub struct InitBuffer<'info> {
 pub struct InitBufferEvent {
     /// The buffer.
     pub buffer: Pubkey,
-    /// The [InstructionBuffer::writer].
     #[index]
-    pub writer: Pubkey,
+    /// The [InstructionBuffer::smart_wallet].
+    pub smart_wallet: Pubkey,
 }
 
-pub fn handle(ctx: Context<InitBuffer>, bump: u8, eta: i64) -> Result<()> {
-    create_transaction::handler(
-        bump,
-        eta,
-        ctx.accounts.proposer.key(),
-        &[],
-        &mut ctx.accounts.smart_wallet,
-        &mut ctx.accounts.transaction,
-    )?;
-
+pub fn handler(ctx: Context<InitBuffer>, eta: i64, writer: Pubkey, executer: Pubkey) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
-    buffer.writer = ctx.accounts.writer.key();
-    buffer.transaction = ctx.accounts.transaction.key();
+    buffer.eta = eta;
+    buffer.executer = executer;
     buffer.smart_wallet = ctx.accounts.smart_wallet.key();
+    buffer.writer = writer;
 
     emit!(InitBufferEvent {
         buffer: buffer.key(),
-        writer: buffer.writer,
+        smart_wallet: buffer.smart_wallet,
     });
 
     Ok(())

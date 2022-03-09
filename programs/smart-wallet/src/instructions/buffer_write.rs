@@ -4,31 +4,26 @@ use crate::*;
 
 #[derive(Accounts)]
 pub struct WriteBuffer<'info> {
-    pub buffer: Account<'info, InstructionBuffer>,
-    #[account(mut)]
-    pub transaction: Box<Account<'info, Transaction>>,
+    pub buffer: Box<Account<'info, InstructionBuffer>>,
     pub writer: Signer<'info>,
 }
 
 /// Emitted when an instruction is written to the [InstructionBuffer].
 #[event]
-pub struct WriteIxEvent {
+pub struct WriteBufferEvent {
     /// The [InstructionBuffer].
     pub buffer: Pubkey,
     /// The [InstructionBuffer::writer].
     pub writer: Pubkey,
-    /// Transaction written to.
-    pub transaction: Pubkey,
 }
 
 pub fn handler(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
-    ctx.accounts.transaction.instructions.push(ix);
+    ctx.accounts.buffer.instructions.push(ix);
 
     let buffer = &ctx.accounts.buffer;
-    emit!(WriteIxEvent {
+    emit!(WriteBufferEvent {
         buffer: buffer.key(),
         writer: buffer.writer,
-        transaction: buffer.transaction,
     });
 
     Ok(())
@@ -38,7 +33,6 @@ impl<'info> Validate<'info> for WriteBuffer<'info> {
     fn validate(&self) -> Result<()> {
         invariant!(self.buffer.finalized_at == 0);
         assert_keys_eq!(self.writer.key(), self.buffer.writer);
-        assert_keys_eq!(self.transaction.key(), self.buffer.transaction);
 
         Ok(())
     }

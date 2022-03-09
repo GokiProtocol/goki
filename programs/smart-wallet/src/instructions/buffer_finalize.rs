@@ -21,7 +21,7 @@ pub struct FinalizeBufferEvent {
     pub time: i64,
 }
 
-pub fn handle(ctx: Context<FinalizeBuffer>) -> Result<()> {
+pub fn handler(ctx: Context<FinalizeBuffer>) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
     buffer.finalized_at = Clock::get()?.unix_timestamp;
 

@@ -150,14 +150,58 @@ pub mod smart_wallet {
         instructions: Vec<TXInstruction>,
         eta: i64,
     ) -> Result<()> {
-        create_transaction::handler(
-            *unwrap_int!(ctx.bumps.get("transaction")),
+        let smart_wallet = &ctx.accounts.smart_wallet;
+        let owner_index = smart_wallet.owner_index(ctx.accounts.proposer.key())?;
+
+        let clock = Clock::get()?;
+        let current_ts = clock.unix_timestamp;
+        if smart_wallet.minimum_delay != 0 {
+            invariant!(
+                eta >= unwrap_int!(current_ts.checked_add(smart_wallet.minimum_delay as i64)),
+                InvalidETA
+            );
+        }
+        if eta != NO_ETA {
+            invariant!(eta >= 0, "ETA must be positive");
+            let delay = unwrap_int!(eta.checked_sub(current_ts));
+            invariant!(delay >= 0, "ETA must be in the future");
+            invariant!(delay <= MAX_DELAY_SECONDS, DelayTooHigh);
+        }
+
+        // generate the signers boolean list
+        let owners = &smart_wallet.owners;
+        let mut signers = Vec::new();
+        signers.resize(owners.len(), false);
+        signers[owner_index] = true;
+
+        let index = smart_wallet.num_transactions;
+        let smart_wallet = &mut ctx.accounts.smart_wallet;
+        smart_wallet.num_transactions = unwrap_int!(smart_wallet.num_transactions.checked_add(1));
+
+        // init the TX
+        let tx = &mut ctx.accounts.transaction;
+        tx.smart_wallet = smart_wallet.key();
+        tx.index = index;
+        tx.bump = *unwrap_int!(ctx.bumps.get("transaction"));
+
+        tx.proposer = ctx.accounts.proposer.key();
+        tx.instructions = instructions.clone();
+        tx.signers = signers;
+        tx.owner_set_seqno = smart_wallet.owner_set_seqno;
+        tx.eta = eta;
+
+        tx.executor = Pubkey::default();
+        tx.executed_at = -1;
+
+        emit!(TransactionCreateEvent {
+            smart_wallet: ctx.accounts.smart_wallet.key(),
+            transaction: ctx.accounts.transaction.key(),
+            proposer: ctx.accounts.proposer.key(),
+            instructions,
             eta,
-            ctx.accounts.proposer.key(),
-            &instructions,
-            &mut ctx.accounts.smart_wallet,
-            &mut ctx.accounts.transaction,
-        )
+            timestamp: Clock::get()?.unix_timestamp
+        });
+        Ok(())
     }
 
     /// Approves a transaction on behalf of an owner of the smart_wallet.
@@ -346,24 +390,27 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn init_buffer(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
-        instructions::buffer_init::handle(ctx, 0, eta)
-    }
-
-    #[access_control(ctx.accounts.validate())]
-    pub fn finalize_buffer(ctx: Context<FinalizeBuffer>) -> Result<()> {
-        instructions::buffer_finalize::handle(ctx)
-    }
-
-    #[access_control(ctx.accounts.validate())]
-    pub fn execute_from_buffer<'info>(
-        ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>,
+    pub fn init_ix_buffer(
+        ctx: Context<InitBuffer>,
+        eta: i64,
+        writer: Pubkey,
+        executer: Pubkey,
     ) -> Result<()> {
-        instructions::buffer_execute::handle(ctx)
+        instructions::buffer_init::handler(ctx, eta, writer, executer)
+    }
+
+    // #[access_control(ctx.accounts.validate())]
+    // pub fn close_ix_buffer(ctx: Context<CloseIxBuffer>) -> Result<()> {
+    //     instructions::buffer::handle_close(ctx)
+    // }
+
+    #[access_control(ctx.accounts.validate())]
+    pub fn execute_ix<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Result<()> {
+        instructions::buffer_execute::handler(ctx)
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn write_to_buffer(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
+    pub fn write_ix(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
         instructions::buffer_write::handler(ctx, ix)
     }
 }
@@ -402,6 +449,35 @@ pub struct Auth<'info> {
     /// The [SmartWallet].
     #[account(mut, signer)]
     pub smart_wallet: Account<'info, SmartWallet>,
+}
+
+/// Accounts for [smart_wallet::create_transaction].
+#[derive(Accounts)]
+#[instruction(bump: u8, instructions: Vec<TXInstruction>)]
+pub struct CreateTransaction<'info> {
+    /// The [SmartWallet].
+    #[account(mut)]
+    pub smart_wallet: Account<'info, SmartWallet>,
+    /// The [Transaction].
+    #[account(
+        init,
+        seeds = [
+            b"GokiTransaction".as_ref(),
+            smart_wallet.key().to_bytes().as_ref(),
+            smart_wallet.num_transactions.to_le_bytes().as_ref()
+        ],
+        bump,
+        payer = payer,
+        space = Transaction::space(instructions),
+    )]
+    pub transaction: Account<'info, Transaction>,
+    /// One of the owners. Checked in the handler via [SmartWallet::owner_index].
+    pub proposer: Signer<'info>,
+    /// Payer to create the [Transaction].
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    /// The [System] program.
+    pub system_program: Program<'info, System>,
 }
 
 /// Accounts for [smart_wallet::approve].

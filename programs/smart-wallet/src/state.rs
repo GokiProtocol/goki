@@ -200,12 +200,17 @@ pub struct SubaccountInfo {
 pub struct InstructionBuffer {
     /// Execution count on this buffer.
     pub exec_count: u8,
+    /// - If set to [crate::NO_ETA], the instructions in the [InstructionBuffer::buffer] may be executed at any time.
+    /// - Otherwise, instructions may be executed at any point after the ETA has elapsed.
+    pub eta: i64,
     /// Time denoting when buffer is ready to be executed.
     pub finalized_at: i64,
     /// Role that can write to the buffer.
     pub writer: Pubkey,
-    /// Transaction container to hold instructions.
-    pub transaction: Pubkey,
-    /// Smart wallet the transaction belongs to.
+    /// Role that can execute instructions off the buffer.
+    pub executer: Pubkey,
+    /// Smart wallet the buffer belongs to.
     pub smart_wallet: Pubkey,
+    /// Vector of instructions.
+    pub instructions: Vec<TXInstruction>,
 }
