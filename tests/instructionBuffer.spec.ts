@@ -173,4 +173,11 @@ describe("instruction loader", () => {
       "cannot execute on unfinalized buffer"
     ).to.be.rejectedWith("0x177a");
   });
+
+  it("Close the instruction buffer", async () => {
+    const tx = sdk.instructionBuffer.closeBuffer(bufferAccount);
+    await expectTXTable(tx, "close buffer").to.be.fulfilled;
+
+    expect(await sdk.provider.getAccountInfo(bufferAccount)).to.be.null;
+  });
 });
