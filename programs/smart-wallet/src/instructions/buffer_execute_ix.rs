@@ -6,7 +6,7 @@ use num_traits::ToPrimitive;
 use crate::*;
 
 #[derive(Accounts)]
-pub struct ExecuteIx<'info> {
+pub struct ExecuteBufferIX<'info> {
     #[account(mut)]
     pub buffer: Account<'info, InstructionBuffer>,
     /// The buffer's [SmartWallet]
@@ -15,7 +15,7 @@ pub struct ExecuteIx<'info> {
     pub executor: Signer<'info>,
 }
 
-pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Result<()> {
+pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteBufferIX<'info>>) -> Result<()> {
     let smart_wallet = &ctx.accounts.smart_wallet;
     let wallet_seeds: &[&[&[u8]]] = &[&[
         b"GokiSmartWallet" as &[u8],
@@ -32,7 +32,7 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Resu
     Ok(())
 }
 
-impl<'info> Validate<'info> for ExecuteIx<'info> {
+impl<'info> Validate<'info> for ExecuteBufferIX<'info> {
     fn validate(&self) -> Result<()> {
         assert_keys_eq!(self.buffer.executer, self.executor.key());
         assert_keys_eq!(self.buffer.smart_wallet, self.smart_wallet.key());

@@ -405,8 +405,10 @@ pub mod smart_wallet {
     // }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn execute_ix<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Result<()> {
-        instructions::buffer_execute::handler(ctx)
+    pub fn execute_ix<'info>(
+        ctx: Context<'_, '_, '_, 'info, ExecuteBufferIX<'info>>,
+    ) -> Result<()> {
+        instructions::buffer_execute_ix::handler(ctx)
     }
 
     #[access_control(ctx.accounts.validate())]
