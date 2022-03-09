@@ -45,7 +45,7 @@ pub struct SetBufferRole<'info> {
 pub struct SetBufferRoleEvent {
     /// The [InstructionBuffer].
     pub buffer: Pubkey,
-    /// The [BufferRole].
+    /// The buffer role that was set.
     pub role: u8,
     /// The old key for the role.
     pub old_role_key: Pubkey,
