@@ -34,6 +34,7 @@ export class InstructionBufferWrapper {
     bufferSize: number,
     smartWallet: PublicKey,
     eta: BN = new BN(-1),
+    admin: PublicKey = this.sdk.provider.wallet.publicKey,
     executer: PublicKey = this.sdk.provider.wallet.publicKey,
     writer: PublicKey = this.sdk.provider.wallet.publicKey,
     bufferAccount: Keypair = Keypair.generate()
@@ -45,7 +46,7 @@ export class InstructionBufferWrapper {
           bufferAccount,
           this.program.account.transaction.size + bufferSize
         ),
-        this.program.instruction.initIxBuffer(eta, executer, writer, {
+        this.program.instruction.initIxBuffer(eta, admin, executer, writer, {
           accounts: {
             smartWallet,
             buffer: bufferAccount.publicKey,

@@ -209,6 +209,8 @@ pub struct InstructionBuffer {
     pub eta: i64,
     /// Time denoting when buffer is ready to be executed.
     pub finalized_at: i64,
+    /// Role that can set the buffer writer and executer.
+    pub admin: Pubkey,
     /// Role that can write to the buffer.
     pub writer: Pubkey,
     /// Role that can execute instructions off the buffer.

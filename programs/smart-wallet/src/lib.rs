@@ -393,10 +393,11 @@ pub mod smart_wallet {
     pub fn init_ix_buffer(
         ctx: Context<InitBuffer>,
         eta: i64,
+        admin: Pubkey,
         writer: Pubkey,
         executer: Pubkey,
     ) -> Result<()> {
-        instructions::buffer_init::handler(ctx, eta, writer, executer)
+        instructions::buffer_init::handler(ctx, eta, admin, writer, executer)
     }
 
     #[access_control(ctx.accounts.validate())]
