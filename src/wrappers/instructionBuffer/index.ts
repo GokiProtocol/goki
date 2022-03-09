@@ -132,6 +132,9 @@ export class InstructionBufferWrapper {
     ]);
   }
 
+  /**
+   * Sets the role on the buffer.
+   */
   setBufferRole(
     bufferAccount: PublicKey,
     role: BufferRoles,
