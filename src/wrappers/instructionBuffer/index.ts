@@ -10,7 +10,7 @@ import BN from "bn.js";
 import type { SmartWalletProgram } from "../../programs";
 import type { InstructionBufferData } from "../../programs/smartWallet";
 import type { GokiSDK } from "../../sdk";
-import type { PendingBuffer } from "./types";
+import type { BufferRoles, PendingBuffer } from "./types";
 
 export class InstructionBufferWrapper {
   readonly program: SmartWalletProgram;
@@ -127,6 +127,22 @@ export class InstructionBufferWrapper {
         accounts: {
           buffer,
           writer,
+        },
+      }),
+    ]);
+  }
+
+  setBufferRole(
+    bufferAccount: PublicKey,
+    role: BufferRoles,
+    newRoleKey: PublicKey,
+    admin: PublicKey = this.sdk.provider.wallet.publicKey
+  ): TransactionEnvelope {
+    return new TransactionEnvelope(this.sdk.provider, [
+      this.program.instruction.setBufferRole(role, newRoleKey, {
+        accounts: {
+          buffer: bufferAccount,
+          admin,
         },
       }),
     ]);
