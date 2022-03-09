@@ -6,9 +6,7 @@ use crate::*;
 pub struct FinalizeBuffer<'info> {
     #[account(mut)]
     pub buffer: Account<'info, InstructionBuffer>,
-    pub smart_wallet: Account<'info, SmartWallet>,
-    pub transaction: Box<Account<'info, Transaction>>,
-    pub owner: Signer<'info>,
+    pub writer: Signer<'info>,
 }
 
 /// Emitted when a [InstructionBuffer] is initialized.
@@ -35,16 +33,8 @@ pub fn handler(ctx: Context<FinalizeBuffer>) -> Result<()> {
 
 impl<'info> Validate<'info> for FinalizeBuffer<'info> {
     fn validate(&self) -> Result<()> {
+        assert_keys_eq!(self.buffer.writer, self.writer);
         invariant!(self.buffer.finalized_at == 0);
-
-        invariant!(
-            self.smart_wallet.owner_set_seqno == self.transaction.owner_set_seqno,
-            OwnerSetChanged
-        );
-
-        // ensure that the owner is a signer
-        // this prevents common frontrunning/flash loan attacks
-        self.smart_wallet.owner_index(self.owner.key())?;
 
         Ok(())
     }

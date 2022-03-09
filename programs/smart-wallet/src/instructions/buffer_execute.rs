@@ -34,10 +34,15 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Resu
 
 impl<'info> Validate<'info> for ExecuteIx<'info> {
     fn validate(&self) -> Result<()> {
+        assert_keys_eq!(self.buffer.executer, self.executor.key());
         assert_keys_eq!(self.buffer.smart_wallet, self.smart_wallet.key());
 
         invariant!(self.buffer.finalized_at > 0, BufferNotFinalized);
         invariant!(self.buffer.exec_count < unwrap_opt!(self.buffer.instructions.len().to_u8()));
+        invariant!(
+            self.smart_wallet.owner_set_seqno == self.buffer.owner_set_seqno,
+            OwnerSetChanged
+        );
 
         let current_ts = Clock::get()?.unix_timestamp;
         // Has buffer surpassed timelock?
