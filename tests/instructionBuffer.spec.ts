@@ -27,9 +27,9 @@ describe("instruction loader", () => {
       threshold: new BN(1),
     });
     await expectTX(tx, "create new smartWallet").to.be.fulfilled;
-    await smartWalletW.reloadData();
 
     smartWalletW = wrapperInner;
+    await smartWalletW.reloadData();
   });
 
   beforeEach(async () => {
