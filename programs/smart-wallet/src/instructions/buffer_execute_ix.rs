@@ -1,9 +1,8 @@
 //! Executes an instruction off of the [InstructionBuffer].
 
-use anchor_lang::solana_program::program::invoke_signed;
-use num_traits::ToPrimitive;
-
 use crate::*;
+
+use anchor_lang::solana_program::program::invoke_signed;
 
 #[derive(Accounts)]
 pub struct ExecuteBufferIX<'info> {
@@ -38,7 +37,7 @@ impl<'info> Validate<'info> for ExecuteBufferIX<'info> {
         assert_keys_eq!(self.buffer.smart_wallet, self.smart_wallet.key());
 
         invariant!(self.buffer.finalized_at > 0, BufferNotFinalized);
-        invariant!(self.buffer.exec_count < unwrap_opt!(self.buffer.instructions.len().to_u8()));
+        invariant!(usize::from(self.buffer.exec_count) < self.buffer.instructions.len());
         invariant!(
             self.smart_wallet.owner_set_seqno == self.buffer.owner_set_seqno,
             OwnerSetChanged

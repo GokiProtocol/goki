@@ -22,4 +22,3 @@ default = []
 [dependencies]
 anchor-lang = "^0.22"
 vipers = "^2.0"
-num-traits = "0.2"

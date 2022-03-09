@@ -4,6 +4,7 @@ use crate::*;
 
 #[derive(Accounts)]
 pub struct WriteBuffer<'info> {
+    #[account(mut)]
     pub buffer: Box<Account<'info, InstructionBuffer>>,
     pub writer: Signer<'info>,
 }
@@ -18,9 +19,9 @@ pub struct WriteBufferEvent {
 }
 
 pub fn handler(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
-    ctx.accounts.buffer.instructions.push(ix);
+    let buffer = &mut ctx.accounts.buffer;
+    buffer.instructions.push(ix);
 
-    let buffer = &ctx.accounts.buffer;
     emit!(WriteBufferEvent {
         buffer: buffer.key(),
         writer: buffer.writer,

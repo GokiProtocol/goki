@@ -1057,7 +1057,6 @@ name = "smart-wallet"
 version = "0.8.0"
 dependencies = [
  "anchor-lang",
- "num-traits",
  "vipers",
 ]
 
