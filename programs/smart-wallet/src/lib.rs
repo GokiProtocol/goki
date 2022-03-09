@@ -415,6 +415,11 @@ pub mod smart_wallet {
     pub fn write_ix(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
         instructions::buffer_write::handler(ctx, ix)
     }
+
+    #[access_control(ctx.accounts.validate())]
+    pub fn finalize_buffer(ctx: Context<FinalizeBuffer>) -> Result<()> {
+        instructions::buffer_finalize::handler(ctx)
+    }
 }
 
 /// Accounts for [smart_wallet::create_smart_wallet].

@@ -1,21 +1,21 @@
-//! Init or close an [InstructionLoader].
+//! Init or close an [InstructionBuffer].
 
 use crate::*;
 
 #[derive(Accounts)]
 pub struct InitBuffer<'info> {
     #[account(zero)]
-    pub buffer: Account<'info, InstructionLoader>,
+    pub buffer: Account<'info, InstructionBuffer>,
     pub smart_wallet: Account<'info, SmartWallet>,
 }
 
-/// Emitted when a [InstructionLoader] is initialized.
+/// Emitted when a [InstructionBuffer] is initialized.
 #[event]
 pub struct InitBufferEvent {
     /// The buffer.
     pub buffer: Pubkey,
     #[index]
-    /// The [InstructionLoader::smart_wallet].
+    /// The [InstructionBuffer::smart_wallet].
     pub smart_wallet: Pubkey,
 }
 

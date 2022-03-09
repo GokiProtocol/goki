@@ -1,19 +1,19 @@
-//! Writes an instruction to the [InstructionLoader].
+//! Writes an instruction to the [InstructionBuffer].
 
 use crate::*;
 
 #[derive(Accounts)]
 pub struct WriteBuffer<'info> {
-    pub buffer: Box<Account<'info, InstructionLoader>>,
+    pub buffer: Box<Account<'info, InstructionBuffer>>,
     pub writer: Signer<'info>,
 }
 
-/// Emitted when an instruction is written to the [InstructionLoader].
+/// Emitted when an instruction is written to the [InstructionBuffer].
 #[event]
 pub struct WriteBufferEvent {
-    /// The [InstructionLoader].
+    /// The [InstructionBuffer].
     pub buffer: Pubkey,
-    /// The [InstructionLoader::writer].
+    /// The [InstructionBuffer::writer].
     pub writer: Pubkey,
 }
 
