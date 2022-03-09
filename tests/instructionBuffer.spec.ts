@@ -19,7 +19,6 @@ describe("instruction loader", () => {
 
   let smartWalletW: SmartWalletWrapper;
   let bufferAccount: PublicKey;
-  let transactionAccount: PublicKey;
 
   before(async () => {
     const { smartWalletWrapper: wrapperInner, tx } = await sdk.newSmartWallet({
@@ -28,28 +27,27 @@ describe("instruction loader", () => {
       threshold: new BN(1),
     });
     await expectTX(tx, "create new smartWallet").to.be.fulfilled;
+    await smartWalletW.reloadData();
+
     smartWalletW = wrapperInner;
   });
 
   beforeEach(async () => {
-    const { buffer, txAccount, tx } = await sdk.instructionBuffer.initBuffer(
-      BUFFER_SIZE,
-      smartWalletW.key
-    );
+    const { bufferAccount: bufferAccountInner, tx } =
+      await sdk.instructionBuffer.initBuffer(BUFFER_SIZE, smartWalletW.key);
     await expectTXTable(tx, "initialize buffer").to.be.fulfilled;
 
-    bufferAccount = buffer;
-    transactionAccount = txAccount;
+    bufferAccount = bufferAccountInner;
   });
 
   it("Buffer was initialized", async () => {
-    const bufferData = await sdk.instructionBuffer.loadBufferData(
-      bufferAccount
-    );
+    const bufferData = await sdk.instructionBuffer.loadData(bufferAccount);
     expect(bufferData.execCount).to.eql(0);
+    expect(bufferData.ownerSetSeqno).to.eql(smartWalletW.data?.ownerSetSeqno);
+    expect(bufferData.eta).to.bignumber.eql(new BN(-1));
     expect(bufferData.finalizedAt).to.bignumber.eql(new BN(0));
     expect(bufferData.writer).to.eqAddress(sdk.provider.wallet.publicKey);
-    expect(bufferData.transaction).eqAddress(transactionAccount);
+    expect(bufferData.executer).eqAddress(sdk.provider.wallet.publicKey);
     expect(bufferData.smartWallet).to.eqAddress(smartWalletW.key);
   });
 
@@ -64,16 +62,11 @@ describe("instruction loader", () => {
       ),
       programId: TOKEN_PROGRAM_ID,
     });
-    const writeTx = await sdk.instructionBuffer.writeInstruction(
-      ix,
-      bufferAccount
-    );
+    const writeTx = sdk.instructionBuffer.writeInstruction(ix, bufferAccount);
     await expectTXTable(writeTx, "write memo instruction to buffer").to.be
       .fulfilled;
 
-    const finalizeTx = await sdk.instructionBuffer.finalizeBuffer(
-      bufferAccount
-    );
+    const finalizeTx = sdk.instructionBuffer.finalizeBuffer(bufferAccount);
     const execTx = await sdk.instructionBuffer.executeInstruction(
       bufferAccount,
       [
@@ -104,65 +97,62 @@ describe("instruction loader", () => {
     );
     expect(newAccountInfo?.accountInfo.owner).to.eqAddress(TOKEN_PROGRAM_ID);
 
-    const bufferData = await sdk.instructionLoader.loadBufferData(
-      bufferAccount
-    );
+    const bufferData = await sdk.instructionBuffer.loadData(bufferAccount);
     expect(bufferData.execCount).to.be.eq(1);
   });
 
   it("Test write and execute multiple instructions", async () => {
     const signers = new Array(3).fill(null).map(() => Keypair.generate());
-    const writeTXs = await Promise.all(
-      signers.map(
-        async (s) =>
-          await sdk.instructionLoader.writeInstruction(
-            createMemoInstruction("test", [s.publicKey]),
-            bufferAccount
-          )
+    const writeTXs = signers.map((s) =>
+      sdk.instructionBuffer.writeInstruction(
+        createMemoInstruction("test", [s.publicKey]),
+        bufferAccount
       )
     );
     const writeTx = TransactionEnvelope.combineAll(...writeTXs);
     await expectTXTable(writeTx, "write memo instructions to buffer").to.be
       .fulfilled;
 
-    const executeTXs = signers.map(async (s) => {
-      const tx = await sdk.instructionLoader.executeInstruction(bufferAccount, [
-        {
-          pubkey: MEMO_PROGRAM_ID,
-          isSigner: false,
-          isWritable: false,
-        },
-        {
-          pubkey: s.publicKey,
-          isSigner: true,
-          isWritable: false,
-        },
-      ]);
-      tx.addSigners(s);
-      return tx;
-    });
-    const execTx = await TransactionEnvelope.combineAllAsync(
-      sdk.instructionLoader.finalizeBuffer(bufferAccount),
-      ...executeTXs
+    const executeTXs = await Promise.all(
+      signers.map(async (s) => {
+        const tx = await sdk.instructionBuffer.executeInstruction(
+          bufferAccount,
+          [
+            {
+              pubkey: MEMO_PROGRAM_ID,
+              isSigner: false,
+              isWritable: false,
+            },
+            {
+              pubkey: s.publicKey,
+              isSigner: true,
+              isWritable: false,
+            },
+          ]
+        );
+        tx.addSigners(s);
+        return tx;
+      })
     );
+    const execTx = sdk.instructionBuffer
+      .finalizeBuffer(bufferAccount)
+      .combine(TransactionEnvelope.combineAll(...executeTXs));
     await expectTXTable(execTx, "execute memo instructions off buffer").to.be
       .fulfilled;
 
-    const bufferData = await sdk.instructionLoader.loadBufferData(
-      bufferAccount
-    );
+    const bufferData = await sdk.instructionBuffer.loadData(bufferAccount);
     expect(bufferData.execCount).to.be.eq(3);
   });
 
-  it("Cannot execute on unfalized buffer", async () => {
-    const writeTx = await sdk.instructionLoader.writeInstruction(
+  it("Cannot execute on unfinalized buffer", async () => {
+    const writeTx = sdk.instructionBuffer.writeInstruction(
       createMemoInstruction("test", [sdk.provider.wallet.publicKey]),
       bufferAccount
     );
     await expectTXTable(writeTx, "write memo instruction to buffer").to.be
       .fulfilled;
 
-    const execTx = await sdk.instructionLoader.executeInstruction(
+    const execTx = await sdk.instructionBuffer.executeInstruction(
       bufferAccount,
       [
         {
