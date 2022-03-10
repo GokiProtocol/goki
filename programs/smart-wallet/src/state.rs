@@ -238,12 +238,10 @@ impl InstructionBuffer {
 
         if let Some(mut_bundle_ref) = bundles.get_mut(usize::from(bundle_index)) {
             *mut_bundle_ref = new_bundle.clone();
+        } else if usize::from(bundle_index) == bundles.len() {
+            bundles.push(new_bundle.clone())
         } else {
-            if usize::from(bundle_index) == bundles.len() {
-                bundles.push(new_bundle.clone())
-            } else {
-                return program_err!(BufferBundleNotFound);
-            }
+            return program_err!(BufferBundleNotFound);
         }
 
         Ok(())
