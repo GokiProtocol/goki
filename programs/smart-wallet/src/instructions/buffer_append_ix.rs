@@ -14,7 +14,7 @@ pub struct AppendBufferIX<'info> {
 /// Emitted when an instruction is written to the [InstructionBuffer].
 #[event]
 pub struct AppendIxEvent {
-    /// The index of the bundle at [Instruction::bundles].
+    /// The index of the bundle at [InstructionBuffer::bundles].
     pub bundle_index: u8,
     /// The [InstructionBuffer].
     pub buffer: Pubkey,
