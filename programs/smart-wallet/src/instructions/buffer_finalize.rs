@@ -22,6 +22,7 @@ pub struct FinalizeBufferEvent {
 pub fn handler(ctx: Context<FinalizeBuffer>) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
     buffer.finalized_at = Clock::get()?.unix_timestamp;
+    buffer.authority = Pubkey::default();
 
     emit!(FinalizeBufferEvent {
         buffer: buffer.key(),
@@ -34,7 +35,6 @@ pub fn handler(ctx: Context<FinalizeBuffer>) -> Result<()> {
 impl<'info> Validate<'info> for FinalizeBuffer<'info> {
     fn validate(&self) -> Result<()> {
         assert_keys_eq!(self.buffer.authority, self.authority);
-        invariant!(self.buffer.finalized_at == 0);
 
         Ok(())
     }
