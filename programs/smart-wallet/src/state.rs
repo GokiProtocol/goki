@@ -4,6 +4,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
 use vipers::prelude::*;
+use vipers::program_err;
 
 /// A [SmartWallet] is a multisig wallet with Timelock capabilities.
 #[account]
@@ -218,26 +219,32 @@ pub struct InstructionBuffer {
 impl InstructionBuffer {
     /// Check if the [InstructionBuffer] has been finalized.
     pub fn is_finalized(&self) -> bool {
-        self.authority != Pubkey::default()
+        self.authority == Pubkey::default()
     }
 
     /// Get the [InstructionBundle] at the specified bundle index.
     pub fn get_bundle(&self, bundle_index: u8) -> Option<InstructionBundle> {
         let (_, right) = self.bundles.split_at(usize::from(bundle_index));
-        if right.len() > 1 {
-            Some(right[0].clone())
-        } else {
+        if right.is_empty() {
             None
+        } else {
+            Some(right[0].clone())
         }
     }
 
     /// Set the [InstructionBundle] at the specified bundle index.
     pub fn set_bundle(&mut self, bundle_index: u8, new_bundle: &InstructionBundle) -> Result<()> {
-        let mut_bundle_ref = unwrap_opt!(
-            self.bundles.get_mut(usize::from(bundle_index)),
-            BufferBundleNotFound
-        );
-        *mut_bundle_ref = new_bundle.clone();
+        let bundles = &mut self.bundles;
+
+        if let Some(mut_bundle_ref) = bundles.get_mut(usize::from(bundle_index)) {
+            *mut_bundle_ref = new_bundle.clone();
+        } else {
+            if usize::from(bundle_index) == bundles.len() {
+                bundles.push(new_bundle.clone())
+            } else {
+                return program_err!(BufferBundleNotFound);
+            }
+        }
 
         Ok(())
     }

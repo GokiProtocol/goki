@@ -48,7 +48,7 @@ impl<'info> Validate<'info> for ExecuteBufferIX<'info> {
             self.smart_wallet.owner_set_seqno == self.buffer.owner_set_seqno,
             OwnerSetChanged
         );
-        invariant!(!self.buffer.is_finalized(), BufferBundleNotFinalized);
+        invariant!(self.buffer.is_finalized(), BufferBundleNotFinalized);
 
         let current_ts = Clock::get()?.unix_timestamp;
         // Has buffer surpassed timelock?
