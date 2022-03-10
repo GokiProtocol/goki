@@ -4,9 +4,9 @@ use crate::*;
 
 #[derive(Accounts)]
 pub struct CloseBuffer<'info> {
-    #[account(mut, close = executer)]
+    #[account(mut, close = executor)]
     pub buffer: Account<'info, InstructionBuffer>,
-    pub executer: Signer<'info>,
+    pub executor: Signer<'info>,
 }
 
 /// Emitted when an [InstructionBuffer] is closed.
@@ -14,22 +14,22 @@ pub struct CloseBuffer<'info> {
 pub struct CloseBufferEvent {
     /// The [InstructionBuffer].
     pub buffer: Pubkey,
-    /// The [InstructionBuffer::writer].
+    /// The [InstructionBuffer::authority].
     #[index]
-    pub executer: Pubkey,
+    pub executor: Pubkey,
 }
 
 pub fn handler(ctx: Context<CloseBuffer>) -> Result<()> {
     emit!(CloseBufferEvent {
         buffer: ctx.accounts.buffer.key(),
-        executer: ctx.accounts.executer.key(),
+        executor: ctx.accounts.executor.key(),
     });
     Ok(())
 }
 
 impl<'info> Validate<'info> for CloseBuffer<'info> {
     fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.executer.key(), self.buffer.executer);
+        assert_keys_eq!(self.executor.key(), self.buffer.executor);
 
         Ok(())
     }

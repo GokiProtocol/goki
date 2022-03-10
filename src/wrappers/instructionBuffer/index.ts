@@ -35,8 +35,8 @@ export class InstructionBufferWrapper {
     smartWallet: PublicKey,
     eta: BN = new BN(-1),
     admin: PublicKey = this.sdk.provider.wallet.publicKey,
-    executer: PublicKey = this.sdk.provider.wallet.publicKey,
-    writer: PublicKey = this.sdk.provider.wallet.publicKey,
+    executor: PublicKey = this.sdk.provider.wallet.publicKey,
+    authority: PublicKey = this.sdk.provider.wallet.publicKey,
     bufferAccount: Keypair = Keypair.generate()
   ): Promise<PendingBuffer> {
     const tx = new TransactionEnvelope(
@@ -46,7 +46,7 @@ export class InstructionBufferWrapper {
           bufferAccount,
           this.program.account.transaction.size + bufferSize
         ),
-        this.program.instruction.initIxBuffer(eta, admin, executer, writer, {
+        this.program.instruction.initIxBuffer(eta, admin, executor, authority, {
           accounts: {
             smartWallet,
             buffer: bufferAccount.publicKey,
@@ -64,13 +64,13 @@ export class InstructionBufferWrapper {
 
   closeBuffer(
     buffer: PublicKey,
-    executer: PublicKey = this.sdk.provider.wallet.publicKey
+    executor: PublicKey = this.sdk.provider.wallet.publicKey
   ): TransactionEnvelope {
     return new TransactionEnvelope(this.sdk.provider, [
       this.program.instruction.closeIxBuffer({
         accounts: {
           buffer,
-          executer,
+          executor,
         },
       }),
     ]);
@@ -81,13 +81,13 @@ export class InstructionBufferWrapper {
    */
   finalizeBuffer(
     buffer: PublicKey,
-    writer: PublicKey = this.sdk.provider.wallet.publicKey
+    authority: PublicKey = this.sdk.provider.wallet.publicKey
   ): TransactionEnvelope {
     return new TransactionEnvelope(this.sdk.provider, [
       this.program.instruction.finalizeBuffer({
         accounts: {
           buffer,
-          writer,
+          authority,
         },
       }),
     ]);
@@ -120,13 +120,13 @@ export class InstructionBufferWrapper {
   writeInstruction(
     ix: TransactionInstruction,
     buffer: PublicKey,
-    writer: PublicKey = this.sdk.provider.wallet.publicKey
+    authority: PublicKey = this.sdk.provider.wallet.publicKey
   ): TransactionEnvelope {
     return new TransactionEnvelope(this.sdk.provider, [
       this.program.instruction.writeBuffer(ix, {
         accounts: {
           buffer,
-          writer,
+          authority,
         },
       }),
     ]);

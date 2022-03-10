@@ -7,6 +7,10 @@ pub struct InitBuffer<'info> {
     #[account(zero)]
     pub buffer: Account<'info, InstructionBuffer>,
     pub smart_wallet: Account<'info, SmartWallet>,
+    /// CHECK: Arbitrary account allowed.
+    pub authority: UncheckedAccount<'info>,
+    /// CHECK: Arbitrary account allowed.
+    pub executor: UncheckedAccount<'info>,
 }
 
 /// Emitted when a [InstructionBuffer] is initialized.
@@ -19,19 +23,13 @@ pub struct InitBufferEvent {
     pub smart_wallet: Pubkey,
 }
 
-pub fn handler(
-    ctx: Context<InitBuffer>,
-    eta: i64,
-    admin: Pubkey,
-    writer: Pubkey,
-    executer: Pubkey,
-) -> Result<()> {
+pub fn handler(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
     buffer.eta = eta;
     buffer.owner_set_seqno = ctx.accounts.smart_wallet.owner_set_seqno;
 
-    buffer.executer = executer;
-    buffer.writer = writer;
+    buffer.executor = ctx.accounts.executor.key();
+    buffer.authority = ctx.accounts.authority.key();
 
     buffer.smart_wallet = ctx.accounts.smart_wallet.key();
 

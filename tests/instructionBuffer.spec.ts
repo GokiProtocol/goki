@@ -46,8 +46,8 @@ describe("instruction loader", () => {
     expect(bufferData.ownerSetSeqno).to.eql(smartWalletW.data?.ownerSetSeqno);
     expect(bufferData.eta).to.bignumber.eql(new BN(-1));
     expect(bufferData.finalizedAt).to.bignumber.eql(new BN(0));
-    expect(bufferData.writer).to.eqAddress(sdk.provider.wallet.publicKey);
-    expect(bufferData.executer).eqAddress(sdk.provider.wallet.publicKey);
+    expect(bufferData.authority).to.eqAddress(sdk.provider.wallet.publicKey);
+    expect(bufferData.executor).eqAddress(sdk.provider.wallet.publicKey);
     expect(bufferData.smartWallet).to.eqAddress(smartWalletW.key);
   });
 

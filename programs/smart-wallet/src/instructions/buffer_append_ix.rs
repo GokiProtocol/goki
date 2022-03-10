@@ -6,7 +6,7 @@ use crate::*;
 pub struct AppendBufferIX<'info> {
     #[account(mut)]
     pub buffer: Box<Account<'info, InstructionBuffer>>,
-    pub writer: Signer<'info>,
+    pub authority: Signer<'info>,
 }
 
 /// Emitted when an instruction is written to the [InstructionBuffer].
@@ -16,8 +16,8 @@ pub struct AppendIxEvent {
     pub bundle_index: u8,
     /// The [InstructionBuffer].
     pub buffer: Pubkey,
-    /// The [InstructionBuffer::writer].
-    pub writer: Pubkey,
+    /// The [InstructionBuffer::authority].
+    pub authority: Pubkey,
 }
 
 pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction) -> Result<()> {
@@ -37,7 +37,7 @@ pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction
     emit!(AppendIxEvent {
         bundle_index,
         buffer: buffer.key(),
-        writer: buffer.writer,
+        authority: buffer.authority,
     });
 
     Ok(())
@@ -45,7 +45,7 @@ pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction
 
 impl<'info> Validate<'info> for AppendBufferIX<'info> {
     fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.writer, self.buffer.writer);
+        assert_keys_eq!(self.authority, self.buffer.authority);
         invariant!(!self.buffer.is_finalized(), BufferFinalized);
 
         Ok(())

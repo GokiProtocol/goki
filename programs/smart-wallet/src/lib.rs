@@ -390,14 +390,8 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn init_ix_buffer(
-        ctx: Context<InitBuffer>,
-        eta: i64,
-        admin: Pubkey,
-        writer: Pubkey,
-        executer: Pubkey,
-    ) -> Result<()> {
-        instructions::buffer_init::handler(ctx, eta, admin, writer, executer)
+    pub fn init_ix_buffer(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
+        instructions::buffer_init::handler(ctx, eta)
     }
 
     #[access_control(ctx.accounts.validate())]

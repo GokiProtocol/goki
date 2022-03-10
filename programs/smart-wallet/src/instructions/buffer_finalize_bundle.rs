@@ -6,7 +6,7 @@ use crate::*;
 pub struct FinalizeBuffer<'info> {
     #[account(mut)]
     pub buffer: Account<'info, InstructionBuffer>,
-    pub writer: Signer<'info>,
+    pub authority: Signer<'info>,
 }
 
 /// Emitted when a [InstructionBuffer] is finalized.
@@ -33,7 +33,7 @@ pub fn handler(ctx: Context<FinalizeBuffer>) -> Result<()> {
 
 impl<'info> Validate<'info> for FinalizeBuffer<'info> {
     fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.buffer.writer, self.writer);
+        assert_keys_eq!(self.buffer.authority, self.authority);
         invariant!(self.buffer.finalized_at == 0);
 
         Ok(())

@@ -11,7 +11,7 @@ pub struct ExecuteBufferIX<'info> {
     pub buffer: Account<'info, InstructionBuffer>,
     /// The buffer's [SmartWallet]
     pub smart_wallet: Account<'info, SmartWallet>,
-    /// The [InstructionBuffer::executer].
+    /// The [InstructionBuffer::executor].
     pub executor: Signer<'info>,
 }
 
@@ -42,7 +42,7 @@ pub fn handler<'info>(
 
 impl<'info> Validate<'info> for ExecuteBufferIX<'info> {
     fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.buffer.executer, self.executor);
+        assert_keys_eq!(self.buffer.executor, self.executor);
         assert_keys_eq!(self.buffer.smart_wallet, self.smart_wallet);
 
         invariant!(

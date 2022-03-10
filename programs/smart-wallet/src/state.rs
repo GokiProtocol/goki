@@ -209,10 +209,10 @@ pub struct InstructionBuffer {
     pub eta: i64,
     /// Time denoting when buffer is ready to be executed.
     pub finalized_at: i64,
-    /// Role that can write to the buffer.
-    pub writer: Pubkey,
+    /// Authority of the buffer.
+    pub authority: Pubkey,
     /// Role that can execute instructions off the buffer.
-    pub executer: Pubkey,
+    pub executor: Pubkey,
     /// Smart wallet the buffer belongs to.
     pub smart_wallet: Pubkey,
     /// Vector of instructions.
