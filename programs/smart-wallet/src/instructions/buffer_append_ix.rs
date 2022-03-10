@@ -4,8 +4,10 @@ use crate::*;
 
 #[derive(Accounts)]
 pub struct AppendBufferIX<'info> {
+    /// The [InstructionBuffer].
     #[account(mut)]
     pub buffer: Box<Account<'info, InstructionBuffer>>,
+    /// The [InstructionBuffer::authority].
     pub authority: Signer<'info>,
 }
 

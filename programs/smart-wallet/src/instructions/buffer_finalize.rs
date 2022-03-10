@@ -5,7 +5,9 @@ use crate::*;
 #[derive(Accounts)]
 pub struct FinalizeBuffer<'info> {
     #[account(mut)]
+    /// The [InstructionBuffer].
     pub buffer: Account<'info, InstructionBuffer>,
+    /// The [InstructionBuffer::authority].
     pub authority: Signer<'info>,
 }
 

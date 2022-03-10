@@ -5,7 +5,9 @@ use crate::*;
 #[derive(Accounts)]
 pub struct InitBuffer<'info> {
     #[account(zero)]
+    /// The [InstructionBuffer].
     pub buffer: Account<'info, InstructionBuffer>,
+    /// The [InstructionBuffer::smart_wallet].
     pub smart_wallet: Account<'info, SmartWallet>,
     /// CHECK: Arbitrary account allowed.
     pub authority: UncheckedAccount<'info>,
@@ -30,7 +32,6 @@ pub fn handler(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
 
     buffer.executor = ctx.accounts.executor.key();
     buffer.authority = ctx.accounts.authority.key();
-
     buffer.smart_wallet = ctx.accounts.smart_wallet.key();
 
     emit!(InitBufferEvent {

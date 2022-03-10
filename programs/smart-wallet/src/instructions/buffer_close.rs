@@ -1,11 +1,13 @@
-//! Closes an [InstructionBuffer] for execution.
+//! Closes an [InstructionBuffer].
 
 use crate::*;
 
 #[derive(Accounts)]
 pub struct CloseBuffer<'info> {
+    /// The [InstructionBuffer].
     #[account(mut, close = authority_or_executor)]
     pub buffer: Account<'info, InstructionBuffer>,
+    /// The [InstructionBuffer::authority] or [InstructionBuffer::executor].
     pub authority_or_executor: Signer<'info>,
 }
 
