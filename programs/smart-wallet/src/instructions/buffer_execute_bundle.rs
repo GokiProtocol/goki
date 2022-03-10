@@ -5,7 +5,7 @@ use crate::*;
 use anchor_lang::solana_program::program::invoke_signed;
 
 #[derive(Accounts)]
-pub struct ExecuteBufferIX<'info> {
+pub struct ExecuteBufferBundle<'info> {
     #[account(mut)]
     /// The [InstructionBuffer].
     pub buffer: Account<'info, InstructionBuffer>,
@@ -16,7 +16,7 @@ pub struct ExecuteBufferIX<'info> {
 }
 
 pub fn handler<'info>(
-    ctx: Context<'_, '_, '_, 'info, ExecuteBufferIX<'info>>,
+    ctx: Context<'_, '_, '_, 'info, ExecuteBufferBundle<'info>>,
     bundle_index: u8,
 ) -> Result<()> {
     let smart_wallet = &ctx.accounts.smart_wallet;
@@ -39,7 +39,7 @@ pub fn handler<'info>(
     Ok(())
 }
 
-impl<'info> Validate<'info> for ExecuteBufferIX<'info> {
+impl<'info> Validate<'info> for ExecuteBufferBundle<'info> {
     fn validate(&self) -> Result<()> {
         assert_keys_eq!(self.buffer.executor, self.executor);
         assert_keys_eq!(self.buffer.smart_wallet, self.smart_wallet);

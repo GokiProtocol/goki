@@ -401,10 +401,10 @@ pub mod smart_wallet {
 
     #[access_control(ctx.accounts.validate())]
     pub fn execute_buffer_ix<'info>(
-        ctx: Context<'_, '_, '_, 'info, ExecuteBufferIX<'info>>,
+        ctx: Context<'_, '_, '_, 'info, ExecuteBufferBundle<'info>>,
         bundle_index: u8,
     ) -> Result<()> {
-        instructions::buffer_execute_ix::handler(ctx, bundle_index)
+        instructions::buffer_execute_bundle::handler(ctx, bundle_index)
     }
 
     #[access_control(ctx.accounts.validate())]

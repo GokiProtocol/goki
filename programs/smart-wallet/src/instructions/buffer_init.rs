@@ -44,6 +44,8 @@ pub fn handler(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
 
 impl<'info> Validate<'info> for InitBuffer<'info> {
     fn validate(&self) -> Result<()> {
+        assert_keys_neq!(self.executor, Pubkey::default());
+
         Ok(())
     }
 }
