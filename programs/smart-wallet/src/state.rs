@@ -198,8 +198,6 @@ pub struct SubaccountInfo {
 #[account]
 #[derive(Default, Debug, PartialEq)]
 pub struct InstructionBuffer {
-    /// Execution count on this buffer.
-    pub exec_count: u8,
     /// Sequence of the ownership set.
     ///
     /// This may be used to see if the owners on the multisig have changed
@@ -215,8 +213,6 @@ pub struct InstructionBuffer {
     pub smart_wallet: Pubkey,
     /// Vector of instructions.
     pub bundles: Vec<InstructionBundle>,
-    /// Number of bundles executed.
-    pub bundles_executed: u64,
 }
 
 impl InstructionBuffer {
