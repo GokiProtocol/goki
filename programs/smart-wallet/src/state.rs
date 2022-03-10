@@ -209,8 +209,6 @@ pub struct InstructionBuffer {
     pub eta: i64,
     /// Time denoting when buffer is ready to be executed.
     pub finalized_at: i64,
-    /// Role that can set the buffer writer and executer.
-    pub admin: Pubkey,
     /// Role that can write to the buffer.
     pub writer: Pubkey,
     /// Role that can execute instructions off the buffer.
@@ -218,5 +216,37 @@ pub struct InstructionBuffer {
     /// Smart wallet the buffer belongs to.
     pub smart_wallet: Pubkey,
     /// Vector of instructions.
+    pub bundles: Vec<InstructionBundle>,
+    /// Number of bundles executed.
+    pub bundles_executed: u64,
+}
+
+impl InstructionBuffer {
+    /// Get the [InstructionBundle] at the specified bundle index.
+    pub fn get_bundle(&mut self, bundle_index: u8) -> Option<InstructionBundle> {
+        let (_, right) = self.bundles.split_at(usize::from(bundle_index));
+        if right.len() > 1 {
+            Some(right[0].clone())
+        } else {
+            None
+        }
+    }
+}
+
+/// Container holding a bundle of instructions.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Default, PartialEq)]
+pub struct InstructionBundle {
+    /// Execution counter on the [InstructionBundle].
+    pub exec_count: u8,
+    /// Time when the [InstructionBundle] was finalized at.
+    pub finalized_at: i64,
+    /// Vector of [TXInstruction] to be executed.
     pub instructions: Vec<TXInstruction>,
+}
+
+impl InstructionBundle {
+    /// Check if the [InstructionBundle] finalized.
+    pub fn is_finalized(&self) -> bool {
+        self.finalized_at > 0
+    }
 }

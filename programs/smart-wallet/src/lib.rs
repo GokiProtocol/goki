@@ -413,18 +413,17 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn write_buffer(ctx: Context<WriteBuffer>, ix: TXInstruction) -> Result<()> {
-        instructions::buffer_write::handler(ctx, ix)
+    pub fn append_buffer_ix(
+        ctx: Context<AppendBufferIX>,
+        bundle_index: u8,
+        ix: TXInstruction,
+    ) -> Result<()> {
+        instructions::buffer_append_ix::handler(ctx, bundle_index, ix)
     }
 
     #[access_control(ctx.accounts.validate())]
     pub fn finalize_buffer(ctx: Context<FinalizeBuffer>) -> Result<()> {
         instructions::buffer_finalize::handler(ctx)
-    }
-
-    #[access_control(ctx.accounts.validate())]
-    pub fn set_buffer_role(ctx: Context<SetBufferRole>, role: u8, role_key: Pubkey) -> Result<()> {
-        instructions::buffer_set_role::handler(ctx, role.into(), role_key)
     }
 }
 
@@ -594,4 +593,8 @@ pub enum ErrorCode {
     BufferNotFinalized,
     #[msg("Invalid buffer role provided.")]
     BufferRoleInvalid,
+    #[msg("Buffer bundle not found.")]
+    BufferBundleNotFound,
+    #[msg("Buffer bundle already finalized.")]
+    BufferBundleFinalized,
 }

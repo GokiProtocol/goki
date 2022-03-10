@@ -23,29 +23,29 @@ pub fn handler<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteBufferIX<'info>>) -
     ]];
 
     let buffer = &mut ctx.accounts.buffer;
-    let ix = &buffer.instructions[buffer.exec_count as usize];
-    invoke_signed(&ix.into(), ctx.remaining_accounts, wallet_seeds)?;
+    // let ix = &buffer.instructions[buffer.exec_count as usize];
+    // invoke_signed(&ix.into(), ctx.remaining_accounts, wallet_seeds)?;
 
-    buffer.exec_count += 1;
+    // buffer.exec_count += 1;
 
     Ok(())
 }
 
 impl<'info> Validate<'info> for ExecuteBufferIX<'info> {
     fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.buffer.executer, self.executor.key());
-        assert_keys_eq!(self.buffer.smart_wallet, self.smart_wallet.key());
+        // assert_keys_eq!(self.buffer.executer, self.executor.key());
+        // assert_keys_eq!(self.buffer.smart_wallet, self.smart_wallet.key());
 
-        invariant!(self.buffer.finalized_at > 0, BufferNotFinalized);
-        invariant!(usize::from(self.buffer.exec_count) < self.buffer.instructions.len());
-        invariant!(
-            self.smart_wallet.owner_set_seqno == self.buffer.owner_set_seqno,
-            OwnerSetChanged
-        );
+        // invariant!(self.buffer.finalized_at > 0, BufferNotFinalized);
+        // invariant!(usize::from(self.buffer.exec_count) < self.buffer.instructions.len());
+        // invariant!(
+        //     self.smart_wallet.owner_set_seqno == self.buffer.owner_set_seqno,
+        //     OwnerSetChanged
+        // );
 
-        let current_ts = Clock::get()?.unix_timestamp;
-        // Has buffer surpassed timelock?
-        invariant!(current_ts >= self.buffer.eta, TransactionNotReady);
+        // let current_ts = Clock::get()?.unix_timestamp;
+        // // Has buffer surpassed timelock?
+        // invariant!(current_ts >= self.buffer.eta, TransactionNotReady);
 
         Ok(())
     }

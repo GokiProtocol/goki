@@ -30,7 +30,6 @@ pub fn handler(
     buffer.eta = eta;
     buffer.owner_set_seqno = ctx.accounts.smart_wallet.owner_set_seqno;
 
-    buffer.admin = admin;
     buffer.executer = executer;
     buffer.writer = writer;
 
