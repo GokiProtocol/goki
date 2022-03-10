@@ -34,9 +34,8 @@ export class InstructionBufferWrapper {
     bufferSize: number,
     smartWallet: PublicKey,
     eta: BN = new BN(-1),
-    admin: PublicKey = this.sdk.provider.wallet.publicKey,
-    executor: PublicKey = this.sdk.provider.wallet.publicKey,
     authority: PublicKey = this.sdk.provider.wallet.publicKey,
+    executor: PublicKey = this.sdk.provider.wallet.publicKey,
     bufferAccount: Keypair = Keypair.generate()
   ): Promise<PendingBuffer> {
     const tx = new TransactionEnvelope(
@@ -46,10 +45,12 @@ export class InstructionBufferWrapper {
           bufferAccount,
           this.program.account.transaction.size + bufferSize
         ),
-        this.program.instruction.initIxBuffer(eta, admin, executor, authority, {
+        this.program.instruction.initIxBuffer(eta, {
           accounts: {
-            smartWallet,
             buffer: bufferAccount.publicKey,
+            authority,
+            executor,
+            smartWallet,
           },
         }),
       ],
@@ -64,13 +65,13 @@ export class InstructionBufferWrapper {
 
   closeBuffer(
     buffer: PublicKey,
-    executor: PublicKey = this.sdk.provider.wallet.publicKey
+    authorityOrExecutor: PublicKey = this.sdk.provider.wallet.publicKey
   ): TransactionEnvelope {
     return new TransactionEnvelope(this.sdk.provider, [
       this.program.instruction.closeIxBuffer({
         accounts: {
           buffer,
-          executor,
+          authorityOrExecutor,
         },
       }),
     ]);
@@ -94,16 +95,17 @@ export class InstructionBufferWrapper {
   }
 
   /**
-   * Executes an instruction from the buffer.
+   * Executes an instruction from the buffer at the specified bundle index.
    */
   async executeInstruction(
     buffer: PublicKey,
+    bundleIndex: number,
     accountMetas: AccountMeta[],
     executor: PublicKey = this.sdk.provider.wallet.publicKey
   ): Promise<TransactionEnvelope> {
     const bufferData = await this.loadData(buffer);
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.executeBufferIx({
+      this.program.instruction.executeBufferIx(bundleIndex, {
         accounts: {
           buffer,
           executor,
@@ -115,37 +117,19 @@ export class InstructionBufferWrapper {
   }
 
   /**
-   * Write an instruction to the buffer.
+   * Append an instruction to the buffer at the bundle specified by the bundle index.
    */
-  writeInstruction(
+  appendInstruction(
     ix: TransactionInstruction,
+    bundleIndex: number,
     buffer: PublicKey,
     authority: PublicKey = this.sdk.provider.wallet.publicKey
   ): TransactionEnvelope {
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.writeBuffer(ix, {
+      this.program.instruction.appendBufferIx(bundleIndex, ix, {
         accounts: {
           buffer,
           authority,
-        },
-      }),
-    ]);
-  }
-
-  /**
-   * Sets the role on the buffer.
-   */
-  setBufferRole(
-    bufferAccount: PublicKey,
-    role: BufferRoles,
-    newRoleKey: PublicKey,
-    admin: PublicKey = this.sdk.provider.wallet.publicKey
-  ): TransactionEnvelope {
-    return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.setBufferRole(role, newRoleKey, {
-        accounts: {
-          buffer: bufferAccount,
-          admin,
         },
       }),
     ]);
