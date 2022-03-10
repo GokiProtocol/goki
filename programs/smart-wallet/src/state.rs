@@ -222,6 +222,11 @@ pub struct InstructionBuffer {
 }
 
 impl InstructionBuffer {
+    /// Check if the [InstructionBuffer] has been finalized.
+    pub fn is_finalized(&self) -> bool {
+        self.finalized_at > 0
+    }
+
     /// Get the [InstructionBundle] at the specified bundle index.
     pub fn get_bundle(&self, bundle_index: u8) -> Option<InstructionBundle> {
         let (_, right) = self.bundles.split_at(usize::from(bundle_index));
@@ -249,18 +254,11 @@ impl InstructionBuffer {
 pub struct InstructionBundle {
     /// Execution counter on the [InstructionBundle].
     pub exec_count: u8,
-    /// Time when the [InstructionBundle] was finalized at.
-    pub finalized_at: i64,
     /// Vector of [TXInstruction] to be executed.
     pub instructions: Vec<TXInstruction>,
 }
 
 impl InstructionBundle {
-    /// Check if the [InstructionBundle] finalized.
-    pub fn is_finalized(&self) -> bool {
-        self.finalized_at > 0
-    }
-
     /// Check if the instructions in the [InstructionBundle] have all been executed.
     pub fn is_executed(&self) -> bool {
         usize::from(self.exec_count) == self.instructions.len()

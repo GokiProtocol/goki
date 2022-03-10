@@ -7,6 +7,7 @@ use anchor_lang::solana_program::program::invoke_signed;
 #[derive(Accounts)]
 pub struct ExecuteBufferIX<'info> {
     #[account(mut)]
+    /// The [InstructionBuffer].
     pub buffer: Account<'info, InstructionBuffer>,
     /// The buffer's [SmartWallet]
     pub smart_wallet: Account<'info, SmartWallet>,
@@ -28,7 +29,6 @@ pub fn handler<'info>(
     ]];
 
     let bundle = &mut unwrap_opt!(buffer.get_bundle(bundle_index), BufferBundleNotFound);
-    invariant!(bundle.is_finalized(), BufferBundleNotFinalized);
     invariant!(!bundle.is_executed(), BufferBundleExecuted);
 
     let ix = &bundle.instructions[usize::from(bundle.exec_count)];
@@ -49,6 +49,7 @@ impl<'info> Validate<'info> for ExecuteBufferIX<'info> {
             self.smart_wallet.owner_set_seqno == self.buffer.owner_set_seqno,
             OwnerSetChanged
         );
+        invariant!(!self.buffer.is_finalized(), BufferBundleNotFinalized);
 
         let current_ts = Clock::get()?.unix_timestamp;
         // Has buffer surpassed timelock?

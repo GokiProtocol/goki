@@ -27,11 +27,9 @@ pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction
         None => InstructionBundle {
             instructions: [].to_vec(),
             exec_count: 0,
-            finalized_at: 0,
         },
     };
 
-    invariant!(!new_bundle.is_finalized(), BufferBundleFinalized);
     new_bundle.instructions.push(ix);
 
     buffer.set_bundle(bundle_index, &new_bundle)?;
@@ -47,7 +45,8 @@ pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction
 
 impl<'info> Validate<'info> for AppendBufferIX<'info> {
     fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.writer.key(), self.buffer.writer);
+        assert_keys_eq!(self.writer, self.buffer.writer);
+        invariant!(!self.buffer.is_finalized(), BufferFinalized);
 
         Ok(())
     }

@@ -590,10 +590,10 @@ pub enum ErrorCode {
     OwnerSetChanged,
     #[msg("Subaccount does not belong to smart wallet.")]
     SubaccountOwnerMismatch,
+    #[msg("Buffer already finalized.")]
+    BufferFinalized,
     #[msg("Buffer bundle not found.")]
     BufferBundleNotFound,
-    #[msg("Buffer bundle already finalized.")]
-    BufferBundleFinalized,
     #[msg("Buffer has not been finalized.")]
     BufferBundleNotFinalized,
     #[msg("Buffer bundle has already been executed.")]
