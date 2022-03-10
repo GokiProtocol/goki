@@ -2,8 +2,6 @@
 
 use crate::*;
 
-use anchor_lang::solana_program::program::invoke_signed;
-
 #[derive(Accounts)]
 pub struct ExecuteBufferBundle<'info> {
     #[account(mut)]
@@ -28,12 +26,12 @@ pub fn handler<'info>(
 
     let buffer = &mut ctx.accounts.buffer;
     let mut bundle = unwrap_opt!(buffer.get_bundle(bundle_index), BufferBundleNotFound);
-    invariant!(!bundle.is_executed(), BufferBundleExecuted);
+    invariant!(!bundle.is_executed, BufferBundleExecuted);
 
-    let ix = &bundle.instructions[usize::from(bundle.exec_count)];
-    invoke_signed(&ix.into(), ctx.remaining_accounts, wallet_seeds)?;
-
-    bundle.exec_count = unwrap_int!(bundle.exec_count.checked_add(1));
+    for ix in bundle.instructions.iter() {
+        solana_program::program::invoke_signed(&(ix).into(), ctx.remaining_accounts, wallet_seeds)?;
+    }
+    bundle.is_executed = true;
     buffer.set_bundle(bundle_index, &bundle)?;
 
     Ok(())

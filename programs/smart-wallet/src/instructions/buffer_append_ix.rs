@@ -26,10 +26,7 @@ pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction
     let buffer = &mut ctx.accounts.buffer;
     let mut new_bundle = match buffer.get_bundle(bundle_index) {
         Some(b) => b,
-        None => InstructionBundle {
-            instructions: [].to_vec(),
-            exec_count: 0,
-        },
+        None => InstructionBundle::default(),
     };
 
     new_bundle.instructions.push(ix);

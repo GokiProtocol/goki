@@ -105,7 +105,7 @@ export class InstructionBufferWrapper {
   ): Promise<TransactionEnvelope> {
     const bufferData = await this.loadData(buffer);
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.executeBufferIx(bundleIndex, {
+      this.program.instruction.executeBufferBundle(bundleIndex, {
         accounts: {
           buffer,
           executor,

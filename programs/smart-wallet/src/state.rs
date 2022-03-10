@@ -252,14 +252,7 @@ impl InstructionBuffer {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Default, PartialEq)]
 pub struct InstructionBundle {
     /// Execution counter on the [InstructionBundle].
-    pub exec_count: u8,
+    pub is_executed: bool,
     /// Vector of [TXInstruction] to be executed.
     pub instructions: Vec<TXInstruction>,
-}
-
-impl InstructionBundle {
-    /// Check if the instructions in the [InstructionBundle] have all been executed.
-    pub fn is_executed(&self) -> bool {
-        usize::from(self.exec_count) == self.instructions.len()
-    }
 }

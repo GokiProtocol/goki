@@ -400,7 +400,7 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn execute_buffer_ix<'info>(
+    pub fn execute_buffer_bundle<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecuteBufferBundle<'info>>,
         bundle_index: u8,
     ) -> Result<()> {
