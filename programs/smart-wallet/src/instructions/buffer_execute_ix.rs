@@ -19,8 +19,6 @@ pub fn handler<'info>(
     ctx: Context<'_, '_, '_, 'info, ExecuteBufferIX<'info>>,
     bundle_index: u8,
 ) -> Result<()> {
-    let buffer = &mut ctx.accounts.buffer;
-
     let smart_wallet = &ctx.accounts.smart_wallet;
     let wallet_seeds: &[&[&[u8]]] = &[&[
         b"GokiSmartWallet" as &[u8],
@@ -28,6 +26,7 @@ pub fn handler<'info>(
         &[smart_wallet.bump],
     ]];
 
+    let buffer = &mut ctx.accounts.buffer;
     let mut bundle = unwrap_opt!(buffer.get_bundle(bundle_index), BufferBundleNotFound);
     invariant!(!bundle.is_executed(), BufferBundleExecuted);
 
