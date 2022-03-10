@@ -408,8 +408,9 @@ pub mod smart_wallet {
     #[access_control(ctx.accounts.validate())]
     pub fn execute_buffer_ix<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecuteBufferIX<'info>>,
+        bundle_index: u8,
     ) -> Result<()> {
-        instructions::buffer_execute_ix::handler(ctx)
+        instructions::buffer_execute_ix::handler(ctx, bundle_index)
     }
 
     #[access_control(ctx.accounts.validate())]
@@ -589,12 +590,12 @@ pub enum ErrorCode {
     OwnerSetChanged,
     #[msg("Subaccount does not belong to smart wallet.")]
     SubaccountOwnerMismatch,
-    #[msg("Instruction buffer has not been finalized.")]
-    BufferNotFinalized,
-    #[msg("Invalid buffer role provided.")]
-    BufferRoleInvalid,
     #[msg("Buffer bundle not found.")]
     BufferBundleNotFound,
     #[msg("Buffer bundle already finalized.")]
     BufferBundleFinalized,
+    #[msg("Buffer has not been finalized.")]
+    BufferBundleNotFinalized,
+    #[msg("Buffer bundle has already been executed.")]
+    BufferBundleExecuted,
 }

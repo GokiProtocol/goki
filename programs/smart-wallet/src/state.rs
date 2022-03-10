@@ -223,13 +223,24 @@ pub struct InstructionBuffer {
 
 impl InstructionBuffer {
     /// Get the [InstructionBundle] at the specified bundle index.
-    pub fn get_bundle(&mut self, bundle_index: u8) -> Option<InstructionBundle> {
+    pub fn get_bundle(&self, bundle_index: u8) -> Option<InstructionBundle> {
         let (_, right) = self.bundles.split_at(usize::from(bundle_index));
         if right.len() > 1 {
             Some(right[0].clone())
         } else {
             None
         }
+    }
+
+    /// Set the [InstructionBundle] at the specified bundle index.
+    pub fn set_bundle(&mut self, bundle_index: u8, new_bundle: &InstructionBundle) -> Result<()> {
+        let mut_bundle_ref = unwrap_opt!(
+            self.bundles.get_mut(usize::from(bundle_index)),
+            BufferBundleNotFound
+        );
+        *mut_bundle_ref = new_bundle.clone();
+
+        Ok(())
     }
 }
 
@@ -248,5 +259,10 @@ impl InstructionBundle {
     /// Check if the [InstructionBundle] finalized.
     pub fn is_finalized(&self) -> bool {
         self.finalized_at > 0
+    }
+
+    /// Check if the instructions in the [InstructionBundle] have all been executed.
+    pub fn is_executed(&self) -> bool {
+        usize::from(self.exec_count) == self.instructions.len()
     }
 }

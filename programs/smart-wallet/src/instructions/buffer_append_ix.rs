@@ -34,8 +34,7 @@ pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction
     invariant!(!new_bundle.is_finalized(), BufferBundleFinalized);
     new_bundle.instructions.push(ix);
 
-    let bundle = unwrap_opt!(buffer.bundles.get_mut(usize::from(bundle_index)));
-    *bundle = new_bundle.clone();
+    buffer.set_bundle(bundle_index, &new_bundle)?;
 
     emit!(AppendIxEvent {
         bundle_index,
