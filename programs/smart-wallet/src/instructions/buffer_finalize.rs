@@ -21,12 +21,11 @@ pub struct FinalizeBufferEvent {
 
 pub fn handler(ctx: Context<FinalizeBuffer>) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
-    buffer.finalized_at = Clock::get()?.unix_timestamp;
     buffer.authority = Pubkey::default();
 
     emit!(FinalizeBufferEvent {
         buffer: buffer.key(),
-        time: buffer.finalized_at,
+        time: Clock::get()?.unix_timestamp,
     });
 
     Ok(())

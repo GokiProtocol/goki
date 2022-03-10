@@ -17,12 +17,15 @@ pub struct CloseBufferEvent {
     /// The [InstructionBuffer::authority].
     #[index]
     pub authority_or_executor: Pubkey,
+    /// Time when the buffer was closed.
+    pub time: i64,
 }
 
 pub fn handler(ctx: Context<CloseBuffer>) -> Result<()> {
     emit!(CloseBufferEvent {
         buffer: ctx.accounts.buffer.key(),
         authority_or_executor: ctx.accounts.authority_or_executor.key(),
+        time: Clock::get()?.unix_timestamp
     });
     Ok(())
 }

@@ -207,8 +207,6 @@ pub struct InstructionBuffer {
     /// - If set to [crate::NO_ETA], the instructions in the [InstructionBuffer::instructions] may be executed at any time.
     /// - Otherwise, instructions may be executed at any point after the ETA has elapsed.
     pub eta: i64,
-    /// Time denoting when buffer is ready to be executed.
-    pub finalized_at: i64,
     /// Authority of the buffer.
     pub authority: Pubkey,
     /// Role that can execute instructions off the buffer.
@@ -224,7 +222,7 @@ pub struct InstructionBuffer {
 impl InstructionBuffer {
     /// Check if the [InstructionBuffer] has been finalized.
     pub fn is_finalized(&self) -> bool {
-        self.finalized_at > 0
+        self.authority != Pubkey::default()
     }
 
     /// Get the [InstructionBundle] at the specified bundle index.
