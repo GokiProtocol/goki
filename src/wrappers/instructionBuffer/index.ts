@@ -120,9 +120,9 @@ export class InstructionBufferWrapper {
    * Append an instruction to the buffer at the bundle specified by the bundle index.
    */
   appendInstruction(
-    ix: TransactionInstruction,
-    bundleIndex: number,
     buffer: PublicKey,
+    bundleIndex: number,
+    ix: TransactionInstruction,
     authority: PublicKey = this.sdk.provider.wallet.publicKey
   ): TransactionEnvelope {
     return new TransactionEnvelope(this.sdk.provider, [
