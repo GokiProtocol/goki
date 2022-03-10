@@ -34,7 +34,7 @@ pub fn handler<'info>(
     let ix = &bundle.instructions[usize::from(bundle.exec_count)];
     invoke_signed(&ix.into(), ctx.remaining_accounts, wallet_seeds)?;
 
-    bundle.exec_count += 1;
+    bundle.exec_count = buffer.exec_count.checked_add(1)?;
     buffer.set_bundle(bundle_index, &bundle)?;
 
     Ok(())
