@@ -10,7 +10,7 @@ import BN from "bn.js";
 import type { SmartWalletProgram } from "../../programs";
 import type { InstructionBufferData } from "../../programs/smartWallet";
 import type { GokiSDK } from "../../sdk";
-import type { BufferRoles, PendingBuffer } from "./types";
+import type { PendingBuffer } from "./types";
 
 export class InstructionBufferWrapper {
   readonly program: SmartWalletProgram;
