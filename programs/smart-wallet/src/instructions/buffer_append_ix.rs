@@ -1,4 +1,4 @@
-//! Appends an instruction to the [InstructionBuffer::bundle] at the bundle_index.
+//! Appends an instruction to the [InstructionBuffer::bundles] at the bundle_index.
 
 use crate::*;
 
@@ -24,7 +24,7 @@ pub struct AppendIxEvent {
 
 pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
-    let new_bundle = &mut match buffer.get_bundle(bundle_index) {
+    let mut new_bundle = match buffer.get_bundle(bundle_index) {
         Some(b) => b,
         None => InstructionBundle {
             instructions: [].to_vec(),
@@ -33,7 +33,6 @@ pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction
     };
 
     new_bundle.instructions.push(ix);
-
     buffer.set_bundle(bundle_index, &new_bundle)?;
 
     emit!(AppendIxEvent {

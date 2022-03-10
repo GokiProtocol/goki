@@ -204,7 +204,7 @@ pub struct InstructionBuffer {
     ///
     /// This may be used to see if the owners on the multisig have changed
     pub owner_set_seqno: u32,
-    /// - If set to [crate::NO_ETA], the instructions in the [InstructionBuffer::instructions] may be executed at any time.
+    /// - If set to [crate::NO_ETA], the instructions in each [InstructionBuffer::bundles] may be executed at any time.
     /// - Otherwise, instructions may be executed at any point after the ETA has elapsed.
     pub eta: i64,
     /// Authority of the buffer.
