@@ -102,7 +102,7 @@ describe("instruction loader", () => {
     expect(newAccountInfo?.accountInfo.owner).to.eqAddress(TOKEN_PROGRAM_ID);
 
     const bufferData = await sdk.instructionBuffer.loadData(bufferAccount);
-    expect(bufferData.bundles[DEFAULT_BUNDLE_INDEX]?.execCount).to.be.eq(1);
+    expect(bufferData.bundles[DEFAULT_BUNDLE_INDEX]?.isExecuted).to.be.true;
   });
 
   it("Test write and execute multiple instructions", async () => {
@@ -118,36 +118,38 @@ describe("instruction loader", () => {
     await expectTXTable(writeTx, "write memo instructions to buffer").to.be
       .fulfilled;
 
-    const executeTXs = await Promise.all(
-      signers.map(async (s) => {
-        const tx = await sdk.instructionBuffer.executeInstruction(
-          bufferAccount,
-          DEFAULT_BUNDLE_INDEX,
-          [
-            {
-              pubkey: MEMO_PROGRAM_ID,
-              isSigner: false,
-              isWritable: false,
-            },
-            {
-              pubkey: s.publicKey,
-              isSigner: true,
-              isWritable: false,
-            },
-          ]
-        );
-        tx.addSigners(s);
-        return tx;
-      })
+    const signerAccountMetas = signers.map((s) => ({
+      pubkey: s.publicKey,
+      isSigner: true,
+      isWritable: false,
+    }));
+
+    const execTx = await sdk.instructionBuffer.executeInstruction(
+      bufferAccount,
+      DEFAULT_BUNDLE_INDEX,
+      [
+        { pubkey: MEMO_PROGRAM_ID, isSigner: false, isWritable: false },
+        ...signerAccountMetas,
+      ]
     );
-    const execTx = sdk.instructionBuffer
+    execTx.addSigners(...signers);
+
+    const tx = sdk.instructionBuffer
       .finalizeBuffer(bufferAccount)
-      .combine(TransactionEnvelope.combineAll(...executeTXs));
-    await expectTXTable(execTx, "execute memo instructions off buffer").to.be
-      .fulfilled;
+      .combine(execTx);
+
+    const receipt = await tx.confirm();
+    receipt.printLogs();
+
+    const joinedLogs = receipt.response.meta?.logMessages?.join("");
+    expect(
+      signers.every((s) =>
+        joinedLogs?.includes(`Signed by ${s.publicKey.toString()}`)
+      )
+    ).to.be.true;
 
     const bufferData = await sdk.instructionBuffer.loadData(bufferAccount);
-    expect(bufferData.bundles[DEFAULT_BUNDLE_INDEX]?.execCount).to.be.eq(3);
+    expect(bufferData.bundles[DEFAULT_BUNDLE_INDEX]?.isExecuted).to.be.true;
   });
 
   it("Cannot execute on unfinalized buffer", async () => {
