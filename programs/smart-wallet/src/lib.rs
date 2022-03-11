@@ -390,23 +390,35 @@ pub mod smart_wallet {
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn init_ix_buffer(ctx: Context<InitIxBuffer>) -> Result<()> {
-        instructions::buffer::handle_init(ctx)
+    pub fn init_ix_buffer(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
+        instructions::buffer_init::handler(ctx, eta)
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn close_ix_buffer(ctx: Context<CloseIxBuffer>) -> Result<()> {
-        instructions::buffer::handle_close(ctx)
+    pub fn close_ix_buffer(ctx: Context<CloseBuffer>) -> Result<()> {
+        instructions::buffer_close::handler(ctx)
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn execute_ix<'info>(ctx: Context<'_, '_, '_, 'info, ExecuteIx<'info>>) -> Result<()> {
-        instructions::execute_ix::handler(ctx)
+    pub fn execute_buffer_bundle<'info>(
+        ctx: Context<'_, '_, '_, 'info, ExecuteBufferBundle<'info>>,
+        bundle_index: u8,
+    ) -> Result<()> {
+        instructions::buffer_execute_bundle::handler(ctx, bundle_index)
     }
 
     #[access_control(ctx.accounts.validate())]
-    pub fn write_ix(ctx: Context<WriteIx>, ix: TXInstruction) -> Result<()> {
-        instructions::write_ix::handler(ctx, ix)
+    pub fn append_buffer_ix(
+        ctx: Context<AppendBufferIX>,
+        bundle_index: u8,
+        ix: TXInstruction,
+    ) -> Result<()> {
+        instructions::buffer_append_ix::handler(ctx, bundle_index, ix)
+    }
+
+    #[access_control(ctx.accounts.validate())]
+    pub fn finalize_buffer(ctx: Context<FinalizeBuffer>) -> Result<()> {
+        instructions::buffer_finalize::handler(ctx)
     }
 }
 
@@ -572,4 +584,12 @@ pub enum ErrorCode {
     OwnerSetChanged,
     #[msg("Subaccount does not belong to smart wallet.")]
     SubaccountOwnerMismatch,
+    #[msg("Buffer already finalized.")]
+    BufferFinalized,
+    #[msg("Buffer bundle not found.")]
+    BufferBundleNotFound,
+    #[msg("Buffer has not been finalized.")]
+    BufferBundleNotFinalized,
+    #[msg("Buffer bundle has already been executed.")]
+    BufferBundleExecuted,
 }

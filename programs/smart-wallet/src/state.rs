@@ -4,6 +4,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
 use vipers::prelude::*;
+use vipers::program_err;
 
 /// A [SmartWallet] is a multisig wallet with Timelock capabilities.
 #[account]
@@ -198,10 +199,60 @@ pub struct SubaccountInfo {
 #[account]
 #[derive(Default, Debug, PartialEq)]
 pub struct InstructionBuffer {
-    /// Execution count on this buffer.
-    pub exec_count: u8,
-    /// Key that can write to the buffer.
-    pub writer: Pubkey,
-    /// Staged instructions to be executed.
-    pub staged_tx_instructions: Vec<TXInstruction>,
+    /// Sequence of the ownership set.
+    ///
+    /// This may be used to see if the owners on the multisig have changed
+    pub owner_set_seqno: u32,
+    /// - If set to [crate::NO_ETA], the instructions in each [InstructionBuffer::bundles] may be executed at any time.
+    /// - Otherwise, instructions may be executed at any point after the ETA has elapsed.
+    pub eta: i64,
+    /// Authority of the buffer.
+    pub authority: Pubkey,
+    /// Role that can execute instructions off the buffer.
+    pub executor: Pubkey,
+    /// Smart wallet the buffer belongs to.
+    pub smart_wallet: Pubkey,
+    /// Vector of instructions.
+    pub bundles: Vec<InstructionBundle>,
+}
+
+impl InstructionBuffer {
+    /// Check if the [InstructionBuffer] has been finalized.
+    pub fn is_finalized(&self) -> bool {
+        self.authority == Pubkey::default()
+    }
+
+    /// Get the [InstructionBundle] at the specified bundle index.
+    pub fn get_bundle(&self, bundle_index: u8) -> Option<InstructionBundle> {
+        let (_, right) = self.bundles.split_at(usize::from(bundle_index));
+        if right.is_empty() {
+            None
+        } else {
+            Some(right[0].clone())
+        }
+    }
+
+    /// Set the [InstructionBundle] at the specified bundle index.
+    pub fn set_bundle(&mut self, bundle_index: u8, new_bundle: &InstructionBundle) -> Result<()> {
+        let bundles = &mut self.bundles;
+
+        if let Some(mut_bundle_ref) = bundles.get_mut(usize::from(bundle_index)) {
+            *mut_bundle_ref = new_bundle.clone();
+        } else if usize::from(bundle_index) == bundles.len() {
+            bundles.push(new_bundle.clone())
+        } else {
+            return program_err!(BufferBundleNotFound);
+        }
+
+        Ok(())
+    }
+}
+
+/// Container holding a bundle of instructions.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, Default, PartialEq)]
+pub struct InstructionBundle {
+    /// Execution counter on the [InstructionBundle].
+    pub is_executed: bool,
+    /// Vector of [TXInstruction] to be executed.
+    pub instructions: Vec<TXInstruction>,
 }
