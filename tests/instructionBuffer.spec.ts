@@ -152,7 +152,60 @@ describe("instruction loader", () => {
     expect(bufferData.bundles[DEFAULT_BUNDLE_INDEX]?.isExecuted).to.be.true;
   });
 
-  it("Cannot execute on unfinalized buffer", async () => {
+  it("Test write and execute bundles in parallel", async () => {
+    const numBundles = 4;
+    const signers = new Array(numBundles)
+      .fill(null)
+      .map(() => Keypair.generate());
+
+    const writeTXs = signers.map((s, bundleIndex) =>
+      sdk.instructionBuffer.appendInstruction(
+        bufferAccount,
+        bundleIndex,
+        createMemoInstruction("test", [s.publicKey])
+      )
+    );
+    await expectTXTable(
+      TransactionEnvelope.combineAll(...writeTXs),
+      "write memo instructions to buffer"
+    ).to.be.fulfilled;
+
+    let bufferData = await sdk.instructionBuffer.loadData(bufferAccount);
+    expect(bufferData.bundles.length).to.eq(numBundles);
+
+    const execTxs = await Promise.all(
+      signers.map(async (s, bundleIndex) => {
+        const tx = await sdk.instructionBuffer.executeInstruction(
+          bufferAccount,
+          bundleIndex,
+          [
+            { pubkey: MEMO_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: s.publicKey, isSigner: true, isWritable: false },
+          ]
+        );
+        tx.addSigners(s);
+        return tx;
+      })
+    );
+    const finalizeTx = sdk.instructionBuffer.finalizeBuffer(bufferAccount);
+    const tx = TransactionEnvelope.combineAll(finalizeTx, ...execTxs);
+
+    const receipt = await tx.confirm();
+    receipt.printLogs();
+
+    const joinedLogs = receipt.response.meta?.logMessages?.join("");
+    expect(
+      signers.every((s) =>
+        joinedLogs?.includes(`Signed by ${s.publicKey.toString()}`)
+      )
+    ).to.be.true;
+
+    bufferData = await sdk.instructionBuffer.loadData(bufferAccount);
+    expect(signers.every((_, i) => bufferData.bundles[i]?.isExecuted)).to.be
+      .true;
+  });
+
+  it("Cannot execute on buffer that is not finalized", async () => {
     const writeTx = sdk.instructionBuffer.appendInstruction(
       bufferAccount,
       DEFAULT_BUNDLE_INDEX,
