@@ -12,7 +12,7 @@ cluster = "localnet"
 wallet = "./tests/test-key.json"
 
 [scripts]
-test = "yarn mocha"
+test = "yarn mocha -b"
 
 [programs.mainnet]
 smart_wallet = "GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH"

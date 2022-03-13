@@ -23,8 +23,8 @@ export class InstructionBufferWrapper {
    * loadData
    * @returns
    */
-  async loadData(loaderAccount: PublicKey): Promise<InstructionBufferData> {
-    return await this.program.account.instructionBuffer.fetch(loaderAccount);
+  async loadData(bufferAccount: PublicKey): Promise<InstructionBufferData> {
+    return await this.program.account.instructionBuffer.fetch(bufferAccount);
   }
 
   /**
