@@ -34,7 +34,7 @@ jobs:
           always-auth: true
           node-version: "16"
       - name: Yarn Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./.yarn
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
@@ -77,7 +77,7 @@ jobs:
       # Install Solana
       - name: Cache Solana binaries
         id: solana-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/solana
@@ -98,7 +98,7 @@ jobs:
         run: nix shell .#ci --command anchor build
 
       - name: Yarn Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./.yarn
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}

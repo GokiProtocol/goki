@@ -32,7 +32,7 @@ jobs:
           always-auth: true
           node-version: 14.x
       - name: Yarn Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./.yarn
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
@@ -108,7 +108,7 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Yarn Cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./.yarn
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
