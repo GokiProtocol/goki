@@ -24,13 +24,17 @@ pub struct AppendIxEvent {
 
 pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
-    let mut new_bundle = match buffer.get_bundle(bundle_index) {
+
+    let b_index = usize::from(bundle_index);
+    invariant!(b_index <= buffer.bundles.len(), BufferBundleOutOfRange);
+
+    let mut new_bundle = match buffer.get_bundle(b_index) {
         Some(b) => b,
         None => InstructionBundle::default(),
     };
 
     new_bundle.instructions.push(ix);
-    buffer.set_bundle(bundle_index, &new_bundle)?;
+    buffer.set_bundle(b_index, &new_bundle)?;
 
     emit!(AppendIxEvent {
         bundle_index,

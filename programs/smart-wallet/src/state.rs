@@ -223,8 +223,8 @@ impl InstructionBuffer {
     }
 
     /// Get the [InstructionBundle] at the specified bundle index.
-    pub fn get_bundle(&self, bundle_index: u8) -> Option<InstructionBundle> {
-        let (_, right) = self.bundles.split_at(usize::from(bundle_index));
+    pub fn get_bundle(&self, bundle_index: usize) -> Option<InstructionBundle> {
+        let (_, right) = self.bundles.split_at(bundle_index);
         if right.is_empty() {
             None
         } else {
@@ -233,12 +233,16 @@ impl InstructionBuffer {
     }
 
     /// Set the [InstructionBundle] at the specified bundle index.
-    pub fn set_bundle(&mut self, bundle_index: u8, new_bundle: &InstructionBundle) -> Result<()> {
+    pub fn set_bundle(
+        &mut self,
+        bundle_index: usize,
+        new_bundle: &InstructionBundle,
+    ) -> Result<()> {
         let bundles = &mut self.bundles;
 
-        if let Some(mut_bundle_ref) = bundles.get_mut(usize::from(bundle_index)) {
+        if let Some(mut_bundle_ref) = bundles.get_mut(bundle_index) {
             *mut_bundle_ref = new_bundle.clone();
-        } else if usize::from(bundle_index) == bundles.len() {
+        } else if bundle_index == bundles.len() {
             bundles.push(new_bundle.clone())
         } else {
             return program_err!(BufferBundleNotFound);

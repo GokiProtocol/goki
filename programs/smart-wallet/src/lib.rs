@@ -588,6 +588,8 @@ pub enum ErrorCode {
     BufferFinalized,
     #[msg("Buffer bundle not found.")]
     BufferBundleNotFound,
+    #[msg("Buffer index specified is out of range.")]
+    BufferBundleOutOfRange,
     #[msg("Buffer has not been finalized.")]
     BufferBundleNotFinalized,
     #[msg("Buffer bundle has already been executed.")]
