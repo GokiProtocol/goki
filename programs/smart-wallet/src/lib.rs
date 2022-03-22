@@ -391,7 +391,12 @@ pub mod smart_wallet {
 
     #[access_control(ctx.accounts.validate())]
     pub fn init_ix_buffer(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
-        instructions::buffer_init::handler(ctx, eta)
+        instructions::buffer_init::handle_init(ctx, eta)
+    }
+
+    #[access_control(ctx.accounts.validate())]
+    pub fn init_ix_buffer_fixed(ctx: Context<InitBuffer>, eta: i64, num_bundles: u8) -> Result<()> {
+        instructions::buffer_init::handle_init_fixed(ctx, eta, num_bundles)
     }
 
     #[access_control(ctx.accounts.validate())]

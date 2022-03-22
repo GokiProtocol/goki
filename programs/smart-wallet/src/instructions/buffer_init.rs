@@ -25,14 +25,28 @@ pub struct InitBufferEvent {
     pub smart_wallet: Pubkey,
 }
 
-pub fn handler(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
-    let buffer = &mut ctx.accounts.buffer;
-    buffer.eta = eta;
-    buffer.owner_set_seqno = ctx.accounts.smart_wallet.owner_set_seqno;
+pub fn handle_init(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
+    init_internal(ctx.accounts, eta, 0)
+}
 
-    buffer.executor = ctx.accounts.executor.key();
-    buffer.authority = ctx.accounts.authority.key();
-    buffer.smart_wallet = ctx.accounts.smart_wallet.key();
+pub fn handle_init_fixed(ctx: Context<InitBuffer>, eta: i64, num_bundles: u8) -> Result<()> {
+    init_internal(ctx.accounts, eta, num_bundles)
+}
+
+fn init_internal(accounts: &mut InitBuffer, eta: i64, num_bundles: u8) -> Result<()> {
+    let buffer = &mut accounts.buffer;
+    buffer.eta = eta;
+    buffer.owner_set_seqno = accounts.smart_wallet.owner_set_seqno;
+
+    buffer.executor = accounts.executor.key();
+    buffer.authority = accounts.authority.key();
+    buffer.smart_wallet = accounts.smart_wallet.key();
+
+    if num_bundles > 0 {
+        buffer
+            .bundles
+            .resize(usize::from(num_bundles), InstructionBundle::default());
+    }
 
     emit!(InitBufferEvent {
         buffer: buffer.key(),
