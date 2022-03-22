@@ -30,15 +30,23 @@ export class InstructionBufferWrapper {
   /**
    * Initialize a loader buffer.
    */
-  async initBuffer(
-    bufferSize: number,
-    smartWallet: PublicKey,
-    eta: BN = new BN(-1),
+  async initBuffer({
+    bufferSize,
+    smartWallet,
+    eta = new BN(-1),
     numBundles = 0,
-    authority: PublicKey = this.sdk.provider.wallet.publicKey,
-    executor: PublicKey = this.sdk.provider.wallet.publicKey,
-    bufferAccount: Keypair = Keypair.generate()
-  ): Promise<PendingBuffer> {
+    authority = this.sdk.provider.wallet.publicKey,
+    executor = this.sdk.provider.wallet.publicKey,
+    bufferAccount = Keypair.generate(),
+  }: {
+    bufferSize: number;
+    smartWallet: PublicKey;
+    eta?: BN;
+    numBundles?: number;
+    authority?: PublicKey;
+    executor?: PublicKey;
+    bufferAccount?: Keypair;
+  }): Promise<PendingBuffer> {
     const accounts = {
       buffer: bufferAccount.publicKey,
       authority,
@@ -57,7 +65,7 @@ export class InstructionBufferWrapper {
           ? this.program.instruction.initIxBuffer(eta, {
               accounts,
             })
-          : this.program.instruction.initIxBufferFixed(eta, numBundles, {
+          : this.program.instruction.initIxBufferWithBundles(eta, numBundles, {
               accounts,
             }),
       ],

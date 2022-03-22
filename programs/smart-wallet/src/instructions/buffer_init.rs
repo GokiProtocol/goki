@@ -29,7 +29,7 @@ pub fn handle_init(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
     init_internal(ctx.accounts, eta, 0)
 }
 
-pub fn handle_init_fixed(ctx: Context<InitBuffer>, eta: i64, num_bundles: u8) -> Result<()> {
+pub fn handle_init_with_bundles(ctx: Context<InitBuffer>, eta: i64, num_bundles: u8) -> Result<()> {
     init_internal(ctx.accounts, eta, num_bundles)
 }
 
