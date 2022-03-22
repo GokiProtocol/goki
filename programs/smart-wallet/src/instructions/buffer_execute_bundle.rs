@@ -24,15 +24,16 @@ pub fn handler<'info>(
         &[smart_wallet.bump],
     ]];
 
+    let b_index = usize::from(bundle_index);
     let buffer = &mut ctx.accounts.buffer;
-    let mut bundle = unwrap_opt!(buffer.get_bundle(bundle_index), BufferBundleNotFound);
+    let mut bundle = unwrap_opt!(buffer.get_bundle(b_index), BufferBundleNotFound);
     invariant!(!bundle.is_executed, BufferBundleExecuted);
 
     for ix in bundle.instructions.iter() {
         solana_program::program::invoke_signed(&(ix).into(), ctx.remaining_accounts, wallet_seeds)?;
     }
     bundle.is_executed = true;
-    buffer.set_bundle(bundle_index, &bundle)?;
+    buffer.set_bundle(b_index, &bundle)?;
 
     Ok(())
 }
