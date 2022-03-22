@@ -117,6 +117,33 @@ export class InstructionBufferWrapper {
   }
 
   /**
+   * Executes all the bundles inside the buffer.
+   */
+  async executeAllInstructions(
+    buffer: PublicKey,
+    accountMetas: AccountMeta[],
+    executor: PublicKey = this.sdk.provider.wallet.publicKey
+  ): Promise<TransactionEnvelope> {
+    const bufferData = await this.loadData(buffer);
+    const instructions = bufferData.bundles
+      .map((bundle, i) =>
+        !bundle.isExecuted
+          ? this.program.instruction.executeBufferBundle(i, {
+              accounts: {
+                buffer,
+                executor,
+                smartWallet: bufferData.smartWallet,
+              },
+              remainingAccounts: accountMetas,
+            })
+          : false
+      )
+      .filter((ix): ix is TransactionInstruction => !ix);
+
+    return new TransactionEnvelope(this.sdk.provider, instructions);
+  }
+
+  /**
    * Append an instruction to the buffer at the bundle specified by the bundle index.
    */
   appendInstruction(
