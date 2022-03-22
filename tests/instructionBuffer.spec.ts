@@ -35,7 +35,10 @@ describe("instruction loader", () => {
 
   beforeEach(async () => {
     const { bufferAccount: bufferAccountInner, tx } =
-      await sdk.instructionBuffer.initBuffer(BUFFER_SIZE, smartWalletW.key);
+      await sdk.instructionBuffer.initBuffer({
+        bufferSize: BUFFER_SIZE,
+        smartWallet: smartWalletW.key,
+      });
     await expectTXTable(tx, "initialize buffer").to.be.fulfilled;
 
     bufferAccount = bufferAccountInner;
@@ -43,6 +46,27 @@ describe("instruction loader", () => {
 
   it("Buffer was initialized", async () => {
     const bufferData = await sdk.instructionBuffer.loadData(bufferAccount);
+    expect(bufferData.bundles.length).to.eql(0);
+    expect(bufferData.ownerSetSeqno).to.eql(smartWalletW.data?.ownerSetSeqno);
+    expect(bufferData.eta).to.bignumber.eql(new BN(-1));
+    expect(bufferData.authority).to.eqAddress(sdk.provider.wallet.publicKey);
+    expect(bufferData.executor).eqAddress(sdk.provider.wallet.publicKey);
+    expect(bufferData.smartWallet).to.eqAddress(smartWalletW.key);
+  });
+
+  it("Intialize buffer with bundles", async () => {
+    const expectedNumBundles = 30;
+    const { bufferAccount: bufferAccountWithBunldes, tx } =
+      await sdk.instructionBuffer.initBuffer({
+        bufferSize: BUFFER_SIZE,
+        smartWallet: smartWalletW.key,
+        numBundles: expectedNumBundles,
+      });
+    await expectTXTable(tx, "initialize buffer with bundles").to.be.fulfilled;
+    const bufferData = await sdk.instructionBuffer.loadData(
+      bufferAccountWithBunldes
+    );
+    expect(bufferData.bundles.length).to.eql(expectedNumBundles);
     expect(bufferData.ownerSetSeqno).to.eql(smartWalletW.data?.ownerSetSeqno);
     expect(bufferData.eta).to.bignumber.eql(new BN(-1));
     expect(bufferData.authority).to.eqAddress(sdk.provider.wallet.publicKey);
