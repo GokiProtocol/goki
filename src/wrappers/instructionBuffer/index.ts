@@ -34,10 +34,18 @@ export class InstructionBufferWrapper {
     bufferSize: number,
     smartWallet: PublicKey,
     eta: BN = new BN(-1),
+    numBundles = 0,
     authority: PublicKey = this.sdk.provider.wallet.publicKey,
     executor: PublicKey = this.sdk.provider.wallet.publicKey,
     bufferAccount: Keypair = Keypair.generate()
   ): Promise<PendingBuffer> {
+    const accounts = {
+      buffer: bufferAccount.publicKey,
+      authority,
+      executor,
+      smartWallet,
+    };
+
     const tx = new TransactionEnvelope(
       this.sdk.provider,
       [
@@ -45,14 +53,13 @@ export class InstructionBufferWrapper {
           bufferAccount,
           this.program.account.transaction.size + bufferSize
         ),
-        this.program.instruction.initIxBuffer(eta, {
-          accounts: {
-            buffer: bufferAccount.publicKey,
-            authority,
-            executor,
-            smartWallet,
-          },
-        }),
+        numBundles === 0
+          ? this.program.instruction.initIxBuffer(eta, {
+              accounts,
+            })
+          : this.program.instruction.initIxBufferFixed(eta, numBundles, {
+              accounts,
+            }),
       ],
       [bufferAccount]
     );
