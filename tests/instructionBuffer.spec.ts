@@ -234,7 +234,7 @@ describe("instruction loader", () => {
     await expectTX(
       execTx,
       "cannot execute on unfinalized buffer"
-    ).to.be.rejectedWith("0x177c");
+    ).to.be.rejectedWith("0x177d");
   });
 
   it("Close the instruction buffer", async () => {
