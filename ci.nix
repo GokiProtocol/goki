@@ -8,7 +8,7 @@ pkgs.buildEnv {
     with saber-pkgs;
     (pkgs.lib.optionals pkgs.stdenv.isLinux ([ udev ])) ++ [
       solana-basic
-      anchor-0_22_0
+      anchor-0_23_0
       cargo-workspaces
 
       # sdk

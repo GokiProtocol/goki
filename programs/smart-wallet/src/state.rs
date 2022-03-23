@@ -195,6 +195,11 @@ pub struct SubaccountInfo {
     pub index: u64,
 }
 
+impl SubaccountInfo {
+    /// Number of bytes that a [SubaccountInfo] uses.
+    pub const LEN: usize = 32 + 1 + 8;
+}
+
 /// An account which holds an array of TxInstructions to be executed.
 #[account]
 #[derive(Default, Debug, PartialEq)]
