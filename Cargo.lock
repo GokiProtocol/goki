@@ -957,7 +957,7 @@ dependencies = [
 
 [[package]]
 name = "smart-wallet"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anchor-lang",
  "vipers",
@@ -1128,7 +1128,7 @@ dependencies = [
 
 [[package]]
 name = "token-signer"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anchor-lang",
  "anchor-spl",

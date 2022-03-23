@@ -1,6 +1,6 @@
 [package]
 name = "token-signer"
-version = "0.10.0"
+version = "0.10.1"
 description = "Sign transactions by owning a token"
 homepage = "https://goki.so"
 repository = "https://github.com/GokiProtocol/goki"
