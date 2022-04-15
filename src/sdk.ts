@@ -111,7 +111,7 @@ export class GokiSDK {
      * Number of owners in the smart wallet.
      */
     numOwners: number;
-    base?: Keypair;
+    base?: Signer;
     /**
      * Timelock delay in seconds
      */
