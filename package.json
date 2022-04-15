@@ -1,7 +1,7 @@
 {
   "name": "@gokiprotocol/client",
   "description": "TypeScript client for the Goki Smart Wallet system.",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "repository": "https://github.com/GokiProtocol/goki.git",
