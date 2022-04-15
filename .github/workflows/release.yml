@@ -8,15 +8,18 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  RUST_TOOLCHAIN: "1.58.0"
   NPM_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
 jobs:
   release-sdk:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix shell .#env-anchor-idls --command bash {0}
+
     name: Release SDK on NPM
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: cachix/install-nix-action@v16
       - name: Setup Cachix
@@ -27,21 +30,22 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          always-auth: true
-          node-version: 14.x
+        uses: actions/setup-node@v3
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Yarn Cache
         uses: actions/cache@v2
         with:
-          path: ./.yarn
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-modules-
+
       - name: Install Yarn dependencies
         run: yarn install
       - name: Parse IDLs
-        run: nix shell .#ci --command yarn idl:generate
+        run: yarn idl:generate
       - run: yarn build
       - run: |
           echo 'npmAuthToken: "${NPM_AUTH_TOKEN}"' >> .yarnrc.yml
@@ -51,7 +55,13 @@ jobs:
   release-crate:
     runs-on: ubuntu-latest
     name: Release crate on crates.io
+    defaults:
+      run:
+        shell: nix shell .#env-release-crates --command bash {0}
+
     steps:
+      - uses: actions/checkout@v3
+
       - uses: cachix/install-nix-action@v16
       - name: Setup Cachix
         uses: cachix/cachix-action@v10
@@ -59,22 +69,20 @@ jobs:
           name: goki
           extraPullNames: quarry, saber
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - uses: actions/checkout@v2
-      - name: Install Rust nightly
-        uses: actions-rs/toolchain@v1
-        with:
-          override: true
-          profile: minimal
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
+
       - uses: Swatinem/rust-cache@v1
       - name: Publish crates
-        run: nix shell .#ci --command cargo ws publish --from-git --yes --skip-published --token ${{ secrets.CARGO_PUBLISH_TOKEN }}
+        run: cargo workspaces publish --from-git --yes --skip-published --token ${{ secrets.CARGO_PUBLISH_TOKEN }}
 
   release-binaries:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix shell .#env-anchor-build --command bash {0}
+
     name: Release verifiable binaries
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: cachix/install-nix-action@v16
       - name: Setup Cachix
         uses: cachix/cachix-action@v10
@@ -84,7 +92,7 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Build programs
-        run: nix shell .#ci --command anchor build --verifiable
+        run: anchor build --verifiable
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
@@ -93,11 +101,15 @@ jobs:
             target/idl/*
             target/verifiable/*
 
-  build-and-deploy:
+  site:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix shell .#env-anchor-idls --command bash {0}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: cachix/install-nix-action@v16
       - name: Setup Cachix
@@ -107,22 +119,26 @@ jobs:
           extraPullNames: quarry, saber
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: Yarn Cache
         uses: actions/cache@v2
         with:
-          path: ./.yarn
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-modules-
+
       - name: Install Yarn dependencies
         run: yarn install
       - name: Parse IDLs
-        run: nix shell .#ci --command yarn idl:generate
+        run: yarn idl:generate
       - run: yarn docs:generate
       - run: cp -R images/ site/
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.2.3
+        uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
           branch: gh-pages
           folder: site

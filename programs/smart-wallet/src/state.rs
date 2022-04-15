@@ -54,7 +54,7 @@ impl SmartWallet {
     }
 
     /// Gets the index of the key in the owners Vec, or error
-    pub fn owner_index(&self, key: Pubkey) -> Result<usize> {
+    pub fn try_owner_index(&self, key: Pubkey) -> Result<usize> {
         Ok(unwrap_opt!(self.owner_index_opt(key), InvalidOwner))
     }
 }

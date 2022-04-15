@@ -25,21 +25,6 @@ impl<'info> Validate<'info> for CreateTransaction<'info> {
     }
 }
 
-impl<'info> Validate<'info> for Approve<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(
-            self.smart_wallet,
-            self.transaction.smart_wallet,
-            "smart_wallet"
-        );
-        invariant!(
-            self.smart_wallet.owner_set_seqno == self.transaction.owner_set_seqno,
-            OwnerSetChanged
-        );
-        Ok(())
-    }
-}
-
 impl<'info> Validate<'info> for ExecuteTransaction<'info> {
     fn validate(&self) -> Result<()> {
         assert_keys_eq!(
@@ -78,7 +63,7 @@ impl<'info> Validate<'info> for ExecuteTransaction<'info> {
 
         // ensure that the owner is a signer
         // this prevents common frontrunning/flash loan attacks
-        self.smart_wallet.owner_index(self.owner.key())?;
+        self.smart_wallet.try_owner_index(self.owner.key())?;
 
         Ok(())
     }
@@ -86,7 +71,7 @@ impl<'info> Validate<'info> for ExecuteTransaction<'info> {
 
 impl<'info> Validate<'info> for OwnerInvokeInstruction<'info> {
     fn validate(&self) -> Result<()> {
-        self.smart_wallet.owner_index(self.owner.key())?;
+        self.smart_wallet.try_owner_index(self.owner.key())?;
         Ok(())
     }
 }

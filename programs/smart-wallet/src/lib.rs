@@ -50,6 +50,7 @@ pub const NO_ETA: i64 = -1;
 declare_id!("GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH");
 
 #[program]
+#[deny(missing_docs)]
 /// Goki smart wallet program.
 pub mod smart_wallet {
     use super::*;
@@ -151,7 +152,7 @@ pub mod smart_wallet {
         eta: i64,
     ) -> Result<()> {
         let smart_wallet = &ctx.accounts.smart_wallet;
-        let owner_index = smart_wallet.owner_index(ctx.accounts.proposer.key())?;
+        let owner_index = smart_wallet.try_owner_index(ctx.accounts.proposer.key())?;
 
         let clock = Clock::get()?;
         let current_ts = clock.unix_timestamp;
@@ -204,40 +205,16 @@ pub mod smart_wallet {
         Ok(())
     }
 
-    /// Approves a transaction on behalf of an owner of the smart_wallet.
+    /// Approves a transaction on behalf of an owner of the [SmartWallet].
     #[access_control(ctx.accounts.validate())]
     pub fn approve(ctx: Context<Approve>) -> Result<()> {
-        let owner_index = ctx
-            .accounts
-            .smart_wallet
-            .owner_index(ctx.accounts.owner.key())?;
-        ctx.accounts.transaction.signers[owner_index] = true;
-
-        emit!(TransactionApproveEvent {
-            smart_wallet: ctx.accounts.smart_wallet.key(),
-            transaction: ctx.accounts.transaction.key(),
-            owner: ctx.accounts.owner.key(),
-            timestamp: Clock::get()?.unix_timestamp
-        });
-        Ok(())
+        instructions::approve::handler(ctx)
     }
 
-    /// Unapproves a transaction on behalf of an owner of the smart_wallet.
+    /// Unapproves a transaction on behalf of an owner of the [SmartWallet].
     #[access_control(ctx.accounts.validate())]
     pub fn unapprove(ctx: Context<Approve>) -> Result<()> {
-        let owner_index = ctx
-            .accounts
-            .smart_wallet
-            .owner_index(ctx.accounts.owner.key())?;
-        ctx.accounts.transaction.signers[owner_index] = false;
-
-        emit!(TransactionUnapproveEvent {
-            smart_wallet: ctx.accounts.smart_wallet.key(),
-            transaction: ctx.accounts.transaction.key(),
-            owner: ctx.accounts.owner.key(),
-            timestamp: Clock::get()?.unix_timestamp
-        });
-        Ok(())
+        instructions::unapprove::handler(ctx)
     }
 
     /// Executes the given transaction if threshold owners have signed it.
@@ -389,11 +366,13 @@ pub mod smart_wallet {
         Ok(())
     }
 
+    /// Initializes a new [InstructionBuffer].
     #[access_control(ctx.accounts.validate())]
     pub fn init_ix_buffer(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
         instructions::buffer_init::handle_init(ctx, eta)
     }
 
+    /// Initializes a new [InstructionBuffer] containing multiple bundles.
     #[access_control(ctx.accounts.validate())]
     pub fn init_ix_buffer_with_bundles(
         ctx: Context<InitBuffer>,
@@ -403,11 +382,13 @@ pub mod smart_wallet {
         instructions::buffer_init::handle_init_with_bundles(ctx, eta, num_bundles)
     }
 
+    /// Closes an [InstructionBuffer].
     #[access_control(ctx.accounts.validate())]
     pub fn close_ix_buffer(ctx: Context<CloseBuffer>) -> Result<()> {
         instructions::buffer_close::handler(ctx)
     }
 
+    /// Executes a bundle of [InstructionBuffer]s.
     #[access_control(ctx.accounts.validate())]
     pub fn execute_buffer_bundle<'info>(
         ctx: Context<'_, '_, '_, 'info, ExecuteBufferBundle<'info>>,
@@ -416,6 +397,7 @@ pub mod smart_wallet {
         instructions::buffer_execute_bundle::handler(ctx, bundle_index)
     }
 
+    /// Appends an instruction to an [InstructionBuffer] bundle.
     #[access_control(ctx.accounts.validate())]
     pub fn append_buffer_ix(
         ctx: Context<AppendBufferIX>,
@@ -425,6 +407,7 @@ pub mod smart_wallet {
         instructions::buffer_append_ix::handler(ctx, bundle_index, ix)
     }
 
+    /// Finalizes an [InstructionBuffer] bundle, preventing it from being further mutated.
     #[access_control(ctx.accounts.validate())]
     pub fn finalize_buffer(ctx: Context<FinalizeBuffer>) -> Result<()> {
         instructions::buffer_finalize::handler(ctx)
@@ -487,25 +470,13 @@ pub struct CreateTransaction<'info> {
         space = Transaction::space(instructions),
     )]
     pub transaction: Account<'info, Transaction>,
-    /// One of the owners. Checked in the handler via [SmartWallet::owner_index].
+    /// One of the owners. Checked in the handler via [SmartWallet::try_owner_index].
     pub proposer: Signer<'info>,
     /// Payer to create the [Transaction].
     #[account(mut)]
     pub payer: Signer<'info>,
     /// The [System] program.
     pub system_program: Program<'info, System>,
-}
-
-/// Accounts for [smart_wallet::approve].
-#[derive(Accounts)]
-pub struct Approve<'info> {
-    /// The [SmartWallet].
-    pub smart_wallet: Account<'info, SmartWallet>,
-    /// The [Transaction].
-    #[account(mut)]
-    pub transaction: Account<'info, Transaction>,
-    /// One of the smart_wallet owners. Checked in the handler.
-    pub owner: Signer<'info>,
 }
 
 /// Accounts for [smart_wallet::execute_transaction].

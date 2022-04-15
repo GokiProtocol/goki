@@ -2,6 +2,7 @@
 
 use crate::*;
 
+/// Accounts for [smart_wallet::init_ix_buffer].
 #[derive(Accounts)]
 pub struct InitBuffer<'info> {
     #[account(zero)]
@@ -25,10 +26,12 @@ pub struct InitBufferEvent {
     pub smart_wallet: Pubkey,
 }
 
+/// Handler for [smart_wallet::init_ix_buffer].
 pub fn handle_init(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
     init_internal(ctx.accounts, eta, 0)
 }
 
+/// Handler for [smart_wallet::init_ix_buffer_with_bundles].
 pub fn handle_init_with_bundles(ctx: Context<InitBuffer>, eta: i64, num_bundles: u8) -> Result<()> {
     init_internal(ctx.accounts, eta, num_bundles)
 }

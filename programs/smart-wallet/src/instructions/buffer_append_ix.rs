@@ -2,6 +2,7 @@
 
 use crate::*;
 
+/// Accounts for [smart_wallet::append_buffer_ix].
 #[derive(Accounts)]
 pub struct AppendBufferIX<'info> {
     /// The [InstructionBuffer].
@@ -22,6 +23,7 @@ pub struct AppendIxEvent {
     pub authority: Pubkey,
 }
 
+/// Instruction handler for [smart_wallet::append_buffer_ix].
 pub fn handler(ctx: Context<AppendBufferIX>, bundle_index: u8, ix: TXInstruction) -> Result<()> {
     let buffer = &mut ctx.accounts.buffer;
 
