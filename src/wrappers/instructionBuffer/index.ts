@@ -2,6 +2,7 @@ import { TransactionEnvelope } from "@saberhq/solana-contrib";
 import type {
   AccountMeta,
   PublicKey,
+  Signer,
   TransactionInstruction,
 } from "@solana/web3.js";
 import { Keypair } from "@solana/web3.js";
@@ -45,7 +46,7 @@ export class InstructionBufferWrapper {
     numBundles?: number;
     authority?: PublicKey;
     executor?: PublicKey;
-    bufferAccount?: Keypair;
+    bufferAccount?: Signer;
   }): Promise<PendingBuffer> {
     const accounts = {
       buffer: bufferAccount.publicKey,
