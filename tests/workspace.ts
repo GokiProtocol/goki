@@ -11,7 +11,7 @@ chai.use(chaiSolana);
 export type Workspace = Programs;
 
 export const makeSDK = (): GokiSDK => {
-  const anchorProvider = anchor.Provider.env();
+  const anchorProvider = anchor.AnchorProvider.env();
   anchor.setProvider(anchorProvider);
 
   const provider = SolanaProvider.load({
