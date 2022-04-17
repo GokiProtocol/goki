@@ -31,6 +31,11 @@ It currently features:
 - **Smart Wallet:** [`GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH`](https://explorer.solana.com/address/GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH)
 - **Token Signer:** [`NFTUJzSHuUCsMMqMRJpB7PmbsaU7Wm51acdPk2FXMLn`](https://explorer.solana.com/address/NFTUJzSHuUCsMMqMRJpB7PmbsaU7Wm51acdPk2FXMLn)
 
+## Ecosystem
+
+- [Tribeca](https://tribeca.so) - DAO toolkit.
+- [goki-grinder](https://github.com/mralbertchen/goki-grinder) - Grinder for Goki wallet vanity addresses.
+
 ## Philosophy
 
 Goki embraces the concept of gradually increasing decentralization: ownership should be able to shift from centralized to increasingly more decentralized accounts.
