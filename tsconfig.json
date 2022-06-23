@@ -1,20 +1,8 @@
 {
+  "extends": "@saberhq/tsconfig/tsconfig.cjs.json",
   "compilerOptions": {
-    "target": "ES2015",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-
-    "strict": true,
-    "noImplicitOverride": true,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
     "noEmit": true,
-    "lib": ["ES2019"]
+    "types": ["mocha"]
   },
-  "include": ["src/", "tests/"]
+  "include": ["src/", "tests/", ".eslintrc.cjs", ".mocharc.cjs"]
 }

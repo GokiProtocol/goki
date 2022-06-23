@@ -1,3 +1,5 @@
+"use strict";
+
 require("./.pnp.cjs").setup();
 
 module.exports = {
