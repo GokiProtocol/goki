@@ -12,7 +12,6 @@ import mapValues from "lodash.mapvalues";
 
 import type { Programs } from "./constants";
 import { GOKI_ADDRESSES, GOKI_IDLS } from "./constants";
-import { InstructionBufferWrapper } from "./wrappers/instructionBuffer";
 import type { PendingSmartWallet } from "./wrappers/smartWallet";
 import {
   findOwnerInvokerAddress,
@@ -30,13 +29,6 @@ export class GokiSDK {
     readonly provider: AugmentedProvider,
     readonly programs: Programs
   ) {}
-
-  /**
-   * Wrapper for the instruction buffer.
-   */
-  get instructionBuffer(): InstructionBufferWrapper {
-    return new InstructionBufferWrapper(this);
-  }
 
   /**
    * Creates a new instance of the SDK with the given keypair.
