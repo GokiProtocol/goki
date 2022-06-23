@@ -27,10 +27,12 @@ use anchor_lang::solana_program;
 use vipers::prelude::*;
 
 mod events;
+mod instructions;
 mod state;
 mod validators;
 
 pub use events::*;
+pub use instructions::*;
 pub use state::*;
 
 /// Number of seconds in a day.
