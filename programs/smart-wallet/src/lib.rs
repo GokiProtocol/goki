@@ -365,53 +365,6 @@ pub mod smart_wallet {
 
         Ok(())
     }
-
-    /// Initializes a new [InstructionBuffer].
-    #[access_control(ctx.accounts.validate())]
-    pub fn init_ix_buffer(ctx: Context<InitBuffer>, eta: i64) -> Result<()> {
-        instructions::buffer_init::handle_init(ctx, eta)
-    }
-
-    /// Initializes a new [InstructionBuffer] containing multiple bundles.
-    #[access_control(ctx.accounts.validate())]
-    pub fn init_ix_buffer_with_bundles(
-        ctx: Context<InitBuffer>,
-        eta: i64,
-        num_bundles: u8,
-    ) -> Result<()> {
-        instructions::buffer_init::handle_init_with_bundles(ctx, eta, num_bundles)
-    }
-
-    /// Closes an [InstructionBuffer].
-    #[access_control(ctx.accounts.validate())]
-    pub fn close_ix_buffer(ctx: Context<CloseBuffer>) -> Result<()> {
-        instructions::buffer_close::handler(ctx)
-    }
-
-    /// Executes a bundle of [InstructionBuffer]s.
-    #[access_control(ctx.accounts.validate())]
-    pub fn execute_buffer_bundle<'info>(
-        ctx: Context<'_, '_, '_, 'info, ExecuteBufferBundle<'info>>,
-        bundle_index: u8,
-    ) -> Result<()> {
-        instructions::buffer_execute_bundle::handler(ctx, bundle_index)
-    }
-
-    /// Appends an instruction to an [InstructionBuffer] bundle.
-    #[access_control(ctx.accounts.validate())]
-    pub fn append_buffer_ix(
-        ctx: Context<AppendBufferIX>,
-        bundle_index: u8,
-        ix: TXInstruction,
-    ) -> Result<()> {
-        instructions::buffer_append_ix::handler(ctx, bundle_index, ix)
-    }
-
-    /// Finalizes an [InstructionBuffer] bundle, preventing it from being further mutated.
-    #[access_control(ctx.accounts.validate())]
-    pub fn finalize_buffer(ctx: Context<FinalizeBuffer>) -> Result<()> {
-        instructions::buffer_finalize::handler(ctx)
-    }
 }
 
 /// Accounts for [smart_wallet::create_smart_wallet].
