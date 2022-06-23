@@ -210,7 +210,7 @@ pub mod smart_wallet {
     pub fn approve(ctx: Context<Approve>) -> Result<()> {
         instructions::approve::handler(ctx)
     }
-    
+
     /// Unapproves a transaction on behalf of an owner of the [SmartWallet].
     #[access_control(ctx.accounts.validate())]
     pub fn unapprove(ctx: Context<Approve>) -> Result<()> {
