@@ -4,7 +4,6 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program;
 use vipers::prelude::*;
-use vipers::program_err;
 
 /// A [SmartWallet] is a multisig wallet with Timelock capabilities.
 #[account]
