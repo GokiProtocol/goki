@@ -9,6 +9,12 @@
     "url": "https://github.com/GokiProtocol/goki/issues",
     "email": "team@goki.so"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "homepage": "https://goki.so",
   "license": "AGPL-3.0",
   "scripts": {
