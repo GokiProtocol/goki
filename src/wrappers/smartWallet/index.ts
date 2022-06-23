@@ -135,24 +135,6 @@ export class SmartWalletWrapper {
   }
 
   /**
-   * Approves a transaction.
-   */
-  approveTransaction(
-    transactionKey: PublicKey,
-    owner: PublicKey = this.provider.wallet.publicKey
-  ): TransactionEnvelope {
-    return new TransactionEnvelope(this.provider, [
-      this.program.instruction.approve({
-        accounts: {
-          smartWallet: this.key,
-          transaction: transactionKey,
-          owner,
-        },
-      }),
-    ]);
-  }
-
-  /**
    * Executes a transaction as the Smart Wallet.
    */
   async executeTransaction({
