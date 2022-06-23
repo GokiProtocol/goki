@@ -203,6 +203,18 @@ pub mod smart_wallet {
         Ok(())
     }
 
+    /// Approves a transaction on behalf of an owner of the [SmartWallet].
+    #[access_control(ctx.accounts.validate())]
+    pub fn approve(ctx: Context<Approve>) -> Result<()> {
+        instructions::approve::handler(ctx)
+    }
+    
+    /// Unapproves a transaction on behalf of an owner of the [SmartWallet].
+    #[access_control(ctx.accounts.validate())]
+    pub fn unapprove(ctx: Context<Approve>) -> Result<()> {
+        instructions::unapprove::handler(ctx)
+    }
+
     /// Executes the given transaction if threshold owners have signed it.
     #[access_control(ctx.accounts.validate())]
     pub fn execute_transaction(ctx: Context<ExecuteTransaction>) -> Result<()> {
