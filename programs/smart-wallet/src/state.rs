@@ -199,4 +199,3 @@ impl SubaccountInfo {
     /// Number of bytes that a [SubaccountInfo] uses.
     pub const LEN: usize = 32 + 1 + 8;
 }
-
