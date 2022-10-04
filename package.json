@@ -82,7 +82,7 @@
     "*.{ts,tsx,cjs,mjs}": "eslint --fix --cache",
     "*.{css,md,json,webmanifest,yml,yaml,js,jsx,html,yml,yaml}": "prettier --write"
   },
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@4.0.0-rc.22",
   "resolutions": {
     "chai": "=4.3.4"
   }
