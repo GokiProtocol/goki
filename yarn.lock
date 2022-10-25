@@ -91,7 +91,7 @@ __metadata:
     "@types/chai": ^4.3.1
     "@types/lodash.mapvalues": ^4.6.7
     "@types/mocha": ^9.1.1
-    "@types/node": ^16.11.41
+    "@types/node": ^18.11.5
     bn.js: ^5.2.1
     chai: ^4.3.6
     eslint: ^8.18.0
@@ -561,10 +561,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.41":
-  version: 16.11.41
-  resolution: "@types/node@npm:16.11.41"
-  checksum: 808e4d65757bb13cf25e88dfa4e65880efef06652b04baecb051eb90cf090dda9812aa3505b31e963a48041eed7dbe0fc59c44c7c5e117da952ff951bf3a584a
+"@types/node@npm:^18.11.5":
+  version: 18.11.5
+  resolution: "@types/node@npm:18.11.5"
+  checksum: ac54e9287dd4549ea3dc8aabc0cf7bfa04c52f02925d7fd68414789617ec770f034c8ae2e111e8bd00d446a46fcac42587b5a316a1303e2f6ea094854248c9ff
   languageName: node
   linkType: hard
 
