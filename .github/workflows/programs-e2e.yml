@@ -24,7 +24,7 @@ jobs:
       # Install Cachix
       - uses: cachix/install-nix-action@v17
       - name: Setup Cachix
-        uses: cachix/cachix-action@v10
+        uses: cachix/cachix-action@v12
         with:
           name: goki
           extraPullNames: quarry, saber
@@ -67,7 +67,7 @@ jobs:
       # Install Cachix
       - uses: cachix/install-nix-action@v17
       - name: Setup Cachix
-        uses: cachix/cachix-action@v10
+        uses: cachix/cachix-action@v12
         with:
           name: goki
           extraPullNames: quarry, saber
