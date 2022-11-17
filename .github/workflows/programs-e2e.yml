@@ -82,7 +82,7 @@ jobs:
         with:
           toolchain: stable
           profile: minimal
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
 
       # Install Solana
       - name: Cache Solana binaries
